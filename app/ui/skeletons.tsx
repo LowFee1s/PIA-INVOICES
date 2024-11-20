@@ -1,12 +1,13 @@
 'use client'
 
-import { themeType } from "../lib/theme";
+import { defaultTheme, themeType } from "../lib/theme";
 
 // Loading animation
 const shimmer =
   'before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent';
 
-export function CardSkeleton({ theme }:{ theme: themeType }) {
+
+export function CardSkeleton({ theme = defaultTheme }:{ theme: themeType }) {
   return (
     <div
       className={`${shimmer} relative overflow-hidden rounded-xl p-2 shadow-sm
@@ -29,10 +30,10 @@ export function CardSkeleton({ theme }:{ theme: themeType }) {
 export function CardsSkeleton({ theme }:{ theme: themeType }) {
   return (
     <>
-      <CardSkeleton theme={theme} />
-      <CardSkeleton theme={theme} />
-      <CardSkeleton theme={theme} />
-      <CardSkeleton theme={theme} />
+      <CardSkeleton theme={theme || defaultTheme} />
+      <CardSkeleton theme={theme || defaultTheme} />
+      <CardSkeleton theme={theme || defaultTheme} />
+      <CardSkeleton theme={theme || defaultTheme} />
     </>
   );
 }

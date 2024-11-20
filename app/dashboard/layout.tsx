@@ -1,7 +1,7 @@
 import SideNav from '@/app/ui/dashboard/sidenav';
 import { auth } from '@/auth';
 import { getUser } from '../lib/data';
-import { darkTheme, lightTheme, systemDefault, themeType } from '../lib/theme';
+import { darkTheme, defaultTheme, lightTheme, systemDefault, themeType } from '../lib/theme';
  
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -9,7 +9,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const user = await getUser(userEmail);
   let theme: themeType;
 
-  switch(user.theme) {
+  switch(user?.theme) {
     case 'system':
       theme = systemDefault;
       break;
@@ -19,6 +19,10 @@ export default async function Layout({ children }: { children: React.ReactNode }
     case 'light':
       theme = lightTheme;
       break;
+    default:
+    // Proporciona un valor predeterminado
+    theme = defaultTheme; 
+    break;
   }
 
   return (

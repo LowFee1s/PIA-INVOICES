@@ -8,7 +8,7 @@ import { Suspense } from 'react';
 import { fetchInvoicesPages, getUser } from '@/app/lib/data';
 import { Metadata } from 'next'; 
 import { auth } from '@/auth';
-import { darkTheme, lightTheme, systemDefault, themeType } from '@/app/lib/theme';
+import { darkTheme, defaultTheme, lightTheme, systemDefault, themeType } from '@/app/lib/theme';
 
 export const metadata: Metadata = {
   title: 'Invoices',
@@ -48,17 +48,17 @@ export default async function Page({
   return (
     <div className="w-full">
       <div className="flex w-full items-center justify-between">
-        <h1 className={`${lusitana.className} text-2xl ${theme.title}`}>Invoices</h1>
+        <h1 className={`${lusitana.className} text-2xl ${theme?.title || defaultTheme.title}`}>Invoices</h1>
       </div>
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-        <Search placeholder="Search invoices..." theme={theme} />
+        <Search placeholder="Search invoices..." theme={theme || defaultTheme} />
         <CreateInvoice />
       </div>
-      <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton theme={theme} />}>
-        <Table query={query} currentPage={currentPage} theme={theme} />
+      <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton theme={theme || defaultTheme} />}>
+        <Table query={query} currentPage={currentPage} theme={theme || defaultTheme} />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
-        <Pagination totalPages={totalPages} theme={theme} />
+        <Pagination totalPages={totalPages} theme={theme || defaultTheme} />
       </div>
     </div>
   );

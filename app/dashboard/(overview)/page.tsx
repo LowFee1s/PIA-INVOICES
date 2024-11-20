@@ -7,7 +7,7 @@ import { RevenueChartSkeleton, LatestInvoicesSkeleton, CardsSkeleton } from '@/a
 import { Metadata } from 'next'; 
 import { auth } from '@/auth';
 import { getUser } from '@/app/lib/data';
-import { darkTheme, lightTheme, systemDefault, themeType } from '@/app/lib/theme';
+import { darkTheme, defaultTheme, lightTheme, systemDefault, themeType } from '@/app/lib/theme';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -32,20 +32,20 @@ switch(user.theme) {
 
   return (
     <main>
-      <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl ${theme.title}`}>
+      <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl ${theme?.title || defaultTheme.title}`}>
         Dashboard
       </h1>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Suspense fallback={<CardsSkeleton theme={theme} />}>
-          <CardWrapper theme={theme} />
+        <Suspense fallback={<CardsSkeleton theme={theme || defaultTheme} />}>
+          <CardWrapper theme={theme || defaultTheme} />
         </Suspense>
       </div>
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
-        <Suspense fallback={<RevenueChartSkeleton theme={theme} />}>
-          <RevenueChart theme={theme}  />
+        <Suspense fallback={<RevenueChartSkeleton theme={theme || defaultTheme} />}>
+          <RevenueChart theme={theme || defaultTheme}  />
         </Suspense>
-        <Suspense fallback={<LatestInvoicesSkeleton theme={theme} />}>
-          <LatestInvoices theme={theme}  />
+        <Suspense fallback={<LatestInvoicesSkeleton theme={theme || defaultTheme} />}>
+          <LatestInvoices theme={theme || defaultTheme}  />
         </Suspense>
       </div>
     </main>

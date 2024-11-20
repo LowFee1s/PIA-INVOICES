@@ -1,5 +1,5 @@
 import { getUser } from '@/app/lib/data';
-import { darkTheme, lightTheme, systemDefault, themeType } from '@/app/lib/theme';
+import { darkTheme, defaultTheme, lightTheme, systemDefault, themeType } from '@/app/lib/theme';
 import DashboardSkeleton from '@/app/ui/skeletons';
 import { auth } from '@/auth';
  
@@ -21,5 +21,5 @@ export default async function Loading() {
       break;
   }
 
-  return <DashboardSkeleton theme={theme} />;
+  return <DashboardSkeleton theme={theme || defaultTheme } />;
 }

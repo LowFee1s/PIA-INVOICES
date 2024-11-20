@@ -181,7 +181,7 @@ export async function createCustomer(prevState: CustomerState, formData: FormDat
   const validatedFields = CustomerSchema.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
-    userEmail: formData.get('userEmail')
+    userEmail: formData.get('email')
   });
  
   // If form validation fails, return errors early. Otherwise, continue.
@@ -291,8 +291,8 @@ export async function createUserWithCredentials(prevState: UserState, formData: 
 
   const date = new Date().toISOString().split('T')[0];
   try {
-    await sql`INSERT INTO users (name, email, password, isoauth, creation_date) VALUES
-     (${name}, ${email}, ${hashedPassword}, ${false}, ${date})`;
+    await sql`INSERT INTO users (name, email, password, isoauth, creation_date, theme) VALUES
+     (${name}, ${email}, ${hashedPassword}, ${false}, ${date}, ${'light'})`;
   } catch (error) {
     console.log(`
       Database Error: Failed to create account:

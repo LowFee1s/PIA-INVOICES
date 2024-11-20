@@ -56,7 +56,7 @@ export async function fetchRevenue() {
             END AS month
       FROM invoices AS i
       INNER JOIN customers AS c ON i.customer_id = c.id
-      WHERE c.user_email = ${userEmail}
+      WHERE c.email = ${userEmail}
         AND i.status = 'paid'
         AND EXTRACT(YEAR FROM i.date) = EXTRACT(YEAR FROM CURRENT_DATE)
       GROUP BY EXTRACT(MONTH FROM i.date)
@@ -81,7 +81,7 @@ export async function fetchLatestInvoices(userEmail: string) {
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
       WHERE
-        customers.user_email = ${userEmail}
+        customers.email = ${userEmail}
       ORDER BY invoices.date DESC
       LIMIT 5`;
 
@@ -111,10 +111,10 @@ export async function fetchCardData(userEmail: string) {
       JOIN 
         customers ON invoices.customer_id = customers.id
       WHERE 
-        customers.user_email = ${userEmail}`;
+        customers.email = ${userEmail}`;
 
     const customerCountPromise = sql`SELECT COUNT(*) FROM customers
-      WHERE customers.user_email = ${userEmail};`;
+      WHERE customers.email = ${userEmail};`;
 
     const invoiceStatusPromise = sql`
     SELECT
@@ -125,7 +125,7 @@ export async function fetchCardData(userEmail: string) {
     JOIN 
       customers ON invoices.customer_id = customers.id
     WHERE 
-      customers.user_email = ${userEmail}`;
+      customers.email = ${userEmail}`;
 
     const data = await Promise.all([
       invoiceCountPromise,
@@ -171,7 +171,7 @@ export async function fetchFilteredInvoices(
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
       WHERE
-        customers.user_email = ${userEmail} AND
+        customers.email = ${userEmail} AND
         (customers.name ILIKE ${`%${query}%`} OR
         customers.email ILIKE ${`%${query}%`} OR
         invoices.amount::text ILIKE ${`%${query}%`} OR
@@ -196,7 +196,7 @@ export async function fetchInvoicesPages(query: string, userEmail: string) {
     FROM invoices
     JOIN customers ON invoices.customer_id = customers.id
     WHERE
-      customers.user_email = ${userEmail} AND 
+      customers.email = ${userEmail} AND 
       (customers.name ILIKE ${`%${query}%`} OR
       customers.email ILIKE ${`%${query}%`} OR
       invoices.amount::text ILIKE ${`%${query}%`} OR
@@ -227,7 +227,7 @@ export async function fetchInvoiceById(id: string, userEmail: string) {
       JOIN 
         customers ON invoices.customer_id = customers.id
       WHERE 
-        customers.user_email = ${userEmail} 
+        customers.email = ${userEmail} 
       AND
         invoices.id = ${id};  
     `;
@@ -256,7 +256,7 @@ export async function fetchCustomers(userEmail: string) {
         id,
         name
       FROM customers
-      where customers.user_email = ${userEmail}
+      where customers.email = ${userEmail}
       ORDER BY name ASC
     `;
 
@@ -285,7 +285,7 @@ export async function fetchFilteredCustomers(query: string, currentPage: number,
 		FROM customers
 		LEFT JOIN invoices ON customers.id = invoices.customer_id
 		WHERE
-      customers.user_email = ${userEmail} AND
+      
 		  (customers.name ILIKE ${`%${query}%`} OR
       customers.email ILIKE ${`%${query}%`})
 		GROUP BY customers.id, customers.name, customers.email, customers
@@ -313,7 +313,7 @@ export async function fetchCustomersPages(query: string, userEmail: string) {
     const count = await sql`SELECT COUNT(*)
     FROM customers
     WHERE
-      customers.user_email = ${userEmail} AND
+      
       (customers.name ILIKE ${`%${query}%`} OR
       customers.email ILIKE ${`%${query}%`})
   `;
@@ -335,7 +335,7 @@ export async function fetchCustomerById(id: string, userEmail: string) {
         id, name, email
       FROM customers
       WHERE
-        customers.user_email = ${userEmail} 
+        customers.email = ${userEmail} 
           AND
         id = ${id};
     `;

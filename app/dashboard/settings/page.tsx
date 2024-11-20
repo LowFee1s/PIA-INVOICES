@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { auth } from '@/auth';
 import { lusitana } from '@/app/ui/fonts';
 import { getUser } from '@/app/lib/data';
-import { darkTheme, lightTheme, systemDefault, themeType } from '@/app/lib/theme';
+import { darkTheme, defaultTheme, lightTheme, systemDefault, themeType } from '@/app/lib/theme';
 
 export const metadata: Metadata = {
   title: 'Settings',
@@ -30,9 +30,9 @@ export default async function Page() {
   return (
     <main className="w-full">
       <div className="flex w-full items-center justify-between mb-6">
-        <h1 className={`${lusitana.className} text-2xl ${theme.title}`}>Settings</h1>
+        <h1 className={`${lusitana.className} text-2xl ${theme?.title || defaultTheme.title}`}>Settings</h1>
       </div>
-      <Form user={user} theme={theme} />
+      <Form user={user} theme={theme || defaultTheme} />
     </main>
   )
 }
