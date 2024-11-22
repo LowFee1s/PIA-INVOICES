@@ -239,6 +239,8 @@ export async function fetchFilteredInvoices(
       SELECT
         invoice_id,
         product_id,
+        name, 
+        description,
         quantity,
         price
       FROM invoice_items
@@ -255,6 +257,8 @@ export async function fetchFilteredInvoices(
         products: invoiceProducts.map((product) => ({
           product_id: product.product_id,
           quantity: product.quantity,
+          title: product.name,
+          description: product.description,
           price: product.price,
         })),
       };
@@ -574,14 +578,14 @@ export async function getUser(userEmail: string) {
 }
 
 
-export async function getUser1(userEmail: string) {
-  noStore();
+// export async function getUser1(userEmail: string) {
+//   noStore();
   
-  try {
-    const user = await sql`SELECT * FROM users WHERE email = ${userEmail}`;
-    return user.rows[0] as User;
-  } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
-  }
-}
+//   try {
+//     const user = await sql`SELECT * FROM users WHERE email = ${userEmail}`;
+//     return user.rows[0] as User;
+//   } catch (error) {
+//     console.error('Failed to fetch user:', error);
+//     throw new Error('Failed to fetch user.');
+//   }
+// }

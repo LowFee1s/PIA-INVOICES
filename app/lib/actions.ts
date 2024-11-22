@@ -153,6 +153,158 @@ type ResetPasswordToken = {
 
 
 
+// export async function createInvoice(prevState: InvoiceState, formData: FormData) {
+//   const rawProducts = formData.get('products') as string | undefined;
+
+//   // Parsear `products` si existe
+//   let parsedProducts = [];
+//   if (rawProducts) {
+//     try {
+//       parsedProducts = JSON.parse(rawProducts);
+//     } catch (error) {
+//       console.error("Error parsing products:", error);
+//       return {
+//         message: 'Invalid products format.',
+//       };
+//     }
+//   }
+
+//   // Obtener los valores del formulario
+//   const customerId1 = formData.get('customerId');
+//   const amount1 = parseFloat(formData.get('amount') as string);
+//   const status1 = formData.get('status');
+//   const employee1 = formData.get('employee');
+//   const fechapagar1 = formData.get('fecha_maxima');
+//   const regimen_fiscal1 = formData.get('regimen_fiscal');
+//   const metodo_pago1 = formData.get('metodo_pago');
+//   const uso_factura1 = formData.get('uso_factura');
+
+//   // Definir los valores predeterminados para los campos vacíos o nulos
+//   const regimen_fiscal12 = regimen_fiscal1 || 'Persona Moral'; // Valor por defecto
+//   const metodo_pago12 = metodo_pago1 || 'Efectivo'; // Valor por defecto
+//   const uso_factura12 = uso_factura1 || 'Gastos Generales'; // Valor por defecto
+
+//   // Comprobación de los valores obtenidos
+//   console.log('Form Data:', {
+//     customerId1,
+//     amount1,
+//     status1,
+//     employee1,
+//     fechapagar1,
+//     regimen_fiscal12,
+//     metodo_pago12,
+//     uso_factura12,
+//     parsedProducts,
+//   });
+
+//   // Definir los mensajes de error antes de usarlos
+//   const errorMessages = {
+//     validation: {
+//       customerId: 'Please select a valid customer.',
+//       amount: 'Please select any products.',
+//       status: 'Please select a valid status.',
+//       products: 'Products list is invalid or empty.',
+//       regimen_fiscal: 'Invalid fiscal regimen selected.',
+//       metodo_pago: 'Invalid payment method selected.',
+//       uso_factura: 'Invalid invoice usage selected.',
+//     },
+//     database: {
+//       general: 'Something went wrong while saving the invoice. Please try again later.',
+//       productInsert: 'Failed to save products. Please check the product details.',
+//       invoiceInsert: 'Failed to save the invoice. Please try again.',
+//     },
+//   };
+
+//   // Validación de los campos con Zod
+//   const validatedFields = InvoicesSchema.safeParse({
+//     customerId: customerId1 ?? '', // Asignar valor predeterminado si es null/undefined
+//     amount: isNaN(amount1) ? 0 : amount1, // Validar si amount es NaN
+//     status: status1 ?? '', // Asignar valor predeterminado si es null/undefined
+//     employee: employee1 ?? '', // Asignar valor predeterminado si es null/undefined
+//     fechapagar: fechapagar1 ?? '', // Asignar valor predeterminado si es null/undefined
+//     regimen_fiscal12, // Usar el valor con el predeterminado
+//     metodo_pago12, // Usar el valor con el predeterminado
+//     uso_factura12, // Usar el valor con el predeterminado
+//     products: parsedProducts,
+//   });
+
+//   // Si la validación falla, retornar los errores
+//   if (!validatedFields.success) {
+//     const fieldErrors = validatedFields.error.flatten().fieldErrors;
+//     console.log('Validation Errors:', fieldErrors);
+
+//     // Traducir los errores
+//     const translatedErrors = Object.entries(fieldErrors).reduce((acc, [key, errors]) => {
+//       acc[key] = errors?.map((error) => errorMessages.validation[key] || error) || [];
+//       return acc;
+//     }, {} as Record<string, string[]>);
+
+//     return {
+//       errors: translatedErrors,
+//       message: 'Please correct the highlighted errors and try again.',
+//     };
+//   }
+
+//   // Usar los datos validados
+//   const { customerId, amount, status, products, employee, fechapagar, uso_factura, metodo_pago, regimen_fiscal } = validatedFields.data;
+//   console.log('Validated Fields:', {
+//     customerId,
+//     amount,
+//     status,
+//     products,
+//     employee,
+//     fechapagar,
+//     uso_factura,
+//     metodo_pago,
+//     regimen_fiscal,
+//   });
+
+//   const amountInCents = amount * 100; // Convertir a centavos
+//   const date = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
+
+//   let result;
+//   try {
+//     // Iniciar una transacción en la base de datos para insertar la factura y los productos
+//     if (status === "Pendiente" && fechapagar) {
+//       console.log("Inserting Pending Invoice:", { customerId, amountInCents, status, date, employee, fechapagar });
+//       result = await sql`
+//       INSERT INTO invoices (customer_id, amount, status, fecha_creado, employee_id, fecha_para_pagar)
+//       VALUES (${customerId}, ${amountInCents}, ${status}, ${date}, ${employee}, ${fechapagar})
+//       RETURNING id`;
+//     }
+
+//     if (status === "Pagado") {
+//       console.log("Inserting Paid Invoice:", { customerId, amountInCents, status, date, employee, uso_factura, metodo_pago, regimen_fiscal });
+//       result = await sql`
+//       INSERT INTO invoices (customer_id, amount, status, fecha_creado, employee_id, usocliente_cdfi, modo_pago, regimenfiscal_cdfi)
+//       VALUES (${customerId}, ${amountInCents}, ${status}, ${date}, ${employee}, ${uso_factura12}, ${metodo_pago12}, ${regimen_fiscal12})
+//       RETURNING id`;
+//     }
+
+//     const invoiceId = result?.rows[0].id;  // Obtener el ID de la factura insertada
+//     console.log('Invoice Inserted, ID:', invoiceId);
+
+//     // Insertar los productos de la factura
+//     for (const product of products) {
+//       const { id, name, price, quantity = 1 } = product; // Desestructurar el producto y asignar cantidad por defecto
+//       console.log(`Inserting product: ${id}, ${name}, Quantity: ${quantity}, Price: ${price}`);
+//       await sql`
+//         INSERT INTO invoice_items (invoice_id, product_id, quantity, price)
+//         VALUES (${invoiceId}, ${id}, ${quantity}, ${price * 100})`; // Convertir precio a centavos
+//     }
+
+//   } catch (error) {
+//     // Si ocurre un error con la base de datos
+//     console.error('Database Error: ', error);
+//     return {
+//       message: 'Database Error: Failed to Create Invoice.',
+//     };
+//   }
+
+//   // Redirigir después de insertar
+//   redirect('/dashboard/invoices');
+// }
+
 export async function createInvoice(prevState: InvoiceState, formData: FormData) {
   const rawProducts = formData.get('products') as string | undefined;
 
@@ -184,43 +336,12 @@ export async function createInvoice(prevState: InvoiceState, formData: FormData)
   const metodo_pago12 = metodo_pago1 || 'Efectivo'; // Valor por defecto
   const uso_factura12 = uso_factura1 || 'Gastos Generales'; // Valor por defecto
 
-  // Comprobación de los valores obtenidos
-  console.log('Form Data:', {
-    customerId1,
-    amount1,
-    status1,
-    employee1,
-    fechapagar1,
-    regimen_fiscal12,
-    metodo_pago12,
-    uso_factura12,
-    parsedProducts,
-  });
-
-  // Definir los mensajes de error antes de usarlos
-  const errorMessages = {
-    validation: {
-      customerId: 'Please select a valid customer.',
-      amount: 'Please select any products.',
-      status: 'Please select a valid status.',
-      products: 'Products list is invalid or empty.',
-      regimen_fiscal: 'Invalid fiscal regimen selected.',
-      metodo_pago: 'Invalid payment method selected.',
-      uso_factura: 'Invalid invoice usage selected.',
-    },
-    database: {
-      general: 'Something went wrong while saving the invoice. Please try again later.',
-      productInsert: 'Failed to save products. Please check the product details.',
-      invoiceInsert: 'Failed to save the invoice. Please try again.',
-    },
-  };
-
   // Validación de los campos con Zod
   const validatedFields = InvoicesSchema.safeParse({
-    customerId: customerId1 ?? '', // Asignar valor predeterminado si es null/undefined
+    customerId: customerId1, // Asignar valor predeterminado si es null/undefined
     amount: isNaN(amount1) ? 0 : amount1, // Validar si amount es NaN
-    status: status1 ?? '', // Asignar valor predeterminado si es null/undefined
-    employee: employee1 ?? '', // Asignar valor predeterminado si es null/undefined
+    status: status1, // Asignar valor predeterminado si es null/undefined
+    employee: employee1, // Asignar valor predeterminado si es null/undefined
     fechapagar: fechapagar1 ?? '', // Asignar valor predeterminado si es null/undefined
     regimen_fiscal12, // Usar el valor con el predeterminado
     metodo_pago12, // Usar el valor con el predeterminado
@@ -232,69 +353,62 @@ export async function createInvoice(prevState: InvoiceState, formData: FormData)
   if (!validatedFields.success) {
     const fieldErrors = validatedFields.error.flatten().fieldErrors;
     console.log('Validation Errors:', fieldErrors);
-
-    // Traducir los errores
-    const translatedErrors = Object.entries(fieldErrors).reduce((acc, [key, errors]) => {
-      acc[key] = errors?.map((error) => errorMessages.validation[key] || error) || [];
-      return acc;
-    }, {} as Record<string, string[]>);
-
     return {
-      errors: translatedErrors,
+      errors: fieldErrors,
       message: 'Please correct the highlighted errors and try again.',
     };
   }
 
-  // Usar los datos validados
-  const { customerId, amount, status, products, employee, fechapagar, uso_factura, metodo_pago, regimen_fiscal } = validatedFields.data;
-  console.log('Validated Fields:', {
-    customerId,
-    amount,
-    status,
-    products,
-    employee,
-    fechapagar,
-    uso_factura,
-    metodo_pago,
-    regimen_fiscal,
-  });
+  // Agrupar productos por product_id y sumar cantidades
+  const groupedProducts = parsedProducts.reduce((acc, product) => {
+    const existingProduct = acc.find(item => item.product_id === product.id);
+    if (existingProduct) {
+      existingProduct.quantity += product.quantity; // Sumar cantidades si el producto ya existe
+      existingProduct.total += product.price * product.quantity; // Sumar el total
+    } else {
+      acc.push({
+        product_id: product.id,
+        title: product.name,
+        description: product.description,
+        price: product.price,
+        quantity: product.quantity,
+        total: product.price * product.quantity,
+      });
+    }
+    return acc;
+  }, []);
 
-  const amountInCents = amount * 100; // Convertir a centavos
-  const date = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
-
+  // Insertar factura y productos agrupados
   let result;
   try {
-    // Iniciar una transacción en la base de datos para insertar la factura y los productos
-    if (status === "Pendiente" && fechapagar) {
-      console.log("Inserting Pending Invoice:", { customerId, amountInCents, status, date, employee, fechapagar });
+    // Iniciar una transacción en la base de datos para insertar la factura
+    if (status1 === "Pendiente" && fechapagar1) {
+
       result = await sql`
-      INSERT INTO invoices (customer_id, amount, status, fecha_creado, employee_id, fecha_para_pagar)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date}, ${employee}, ${fechapagar})
-      RETURNING id`;
+        INSERT INTO invoices (customer_id, amount, status, fecha_creado, employee_id, fecha_para_pagar)
+        VALUES (${customerId1}, ${amount1 * 100}, ${status1}, ${new Date().toISOString()}, ${employee1}, ${fechapagar1})
+        RETURNING id`;
     }
 
-    if (status === "Pagado") {
-      console.log("Inserting Paid Invoice:", { customerId, amountInCents, status, date, employee, uso_factura, metodo_pago, regimen_fiscal });
+    if (status1 === "Pagado") {
       result = await sql`
       INSERT INTO invoices (customer_id, amount, status, fecha_creado, employee_id, usocliente_cdfi, modo_pago, regimenfiscal_cdfi)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date}, ${employee}, ${uso_factura12}, ${metodo_pago12}, ${regimen_fiscal12})
+      VALUES (${customerId1}, ${amount1 * 100}, ${status1}, ${new Date().toISOString()}, ${employee1}, ${uso_factura12}, ${metodo_pago12}, ${regimen_fiscal12})
       RETURNING id`;
     }
 
-    const invoiceId = result?.rows[0].id;  // Obtener el ID de la factura insertada
+    const invoiceId = result?.rows[0].id; // Obtener el ID de la factura insertada
     console.log('Invoice Inserted, ID:', invoiceId);
 
-    // Insertar los productos de la factura
-    for (const product of products) {
-      const { id, name, price, quantity = 1 } = product; // Desestructurar el producto y asignar cantidad por defecto
-      console.log(`Inserting product: ${id}, ${name}, Quantity: ${quantity}, Price: ${price}`);
+    // Insertar los productos agrupados
+    for (const product of groupedProducts) {
+      console.log(`Inserting product: ${product.product_id}, Quantity: ${product.quantity}, Name:${product.title}, Description: ${product.description}, Price: ${product.price}`);
       await sql`
-        INSERT INTO invoice_items (invoice_id, product_id, quantity, price)
-        VALUES (${invoiceId}, ${id}, ${quantity}, ${price * 100})`; // Convertir precio a centavos
+        INSERT INTO invoice_items (invoice_id, product_id, quantity, price, name, description)
+        VALUES (${invoiceId}, ${product.product_id}, ${product.quantity}, ${product.price * 100}, ${product.title}, ${product.description})`; // Convertir precio a centavos
     }
 
   } catch (error) {
-    // Si ocurre un error con la base de datos
     console.error('Database Error: ', error);
     return {
       message: 'Database Error: Failed to Create Invoice.',
@@ -304,6 +418,7 @@ export async function createInvoice(prevState: InvoiceState, formData: FormData)
   // Redirigir después de insertar
   redirect('/dashboard/invoices');
 }
+
 
 
 
@@ -784,7 +899,7 @@ export async function updateUser(
   // Insert data into the database
   try {
     await sql`
-      UPDATE users
+      UPDATE employees
       SET 
         name = ${name}, 
         password = ${hashedPassword},
@@ -812,7 +927,7 @@ export async function updateTheme(
 
   try {
     await sql`
-      UPDATE users
+      UPDATE employees
       SET
         theme = ${theme}
       WHERE
@@ -879,7 +994,7 @@ export async function resetPassword(
   // checking whether there is an user with this email
   const email = decoded.email;
   try {
-    const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
+    const user = await sql<User>`SELECT * FROM employees WHERE email=${email}`;
     if (!user.rows[0]) {
       return `There's no user with this email: ${email}`;
     }
@@ -907,7 +1022,7 @@ export async function resetPassword(
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
     await sql`
-      UPDATE users
+      UPDATE employees
       SET 
         password = ${hashedPassword}
       WHERE

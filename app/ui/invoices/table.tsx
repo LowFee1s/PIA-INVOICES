@@ -61,7 +61,7 @@ export default function InvoicesTable({
                       onOpen={() => openModal(invoice)}
                       theme={theme}
                     /> */}
-                    <InvoicePDFGenerator invoice={invoice} theme={theme} />
+                    <InvoicePDFGenerator disabled={invoice.status == "Pendiente" ? true : false} invoice={invoice} theme={theme} />
                     <UpdateInvoice disabled={invoice.status == "Pagado" ? true : false} id={invoice.id} theme={theme} />
                     <DeleteInvoice disabled={invoice.status == "Pagado" ? true : false} id={invoice.id} theme={theme} />
                   </div>
@@ -131,7 +131,7 @@ export default function InvoicesTable({
                         onOpen={() => openModal(invoice)}
                         theme={theme}
                       /> */}
-                      <InvoicePDFGenerator invoice={invoice} theme={theme} />
+                      <InvoicePDFGenerator disabled={invoice.status == "Pendiente" ? true : false} invoice={invoice} theme={theme} />
                       <UpdateInvoice disabled={invoice.status == "Pagado" ? true : false} id={invoice.id} theme={theme} />
                       <DeleteInvoice disabled={invoice.status == "Pagado" ? true : false} id={invoice.id} theme={theme} />
                     </div>

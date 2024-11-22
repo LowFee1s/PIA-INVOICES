@@ -38,7 +38,7 @@ export function UpdateInvoice({
       href={`/dashboard/invoices/${id}/edit`}
       onClick={handleClick}
       aria-disabled={disabled} className={`rounded-md border p-2 
-        ${disabled ? 'bg-gray-300 text-gray-100 cursor-not-allowed' : 
+        ${disabled ? 'bg-gray-400 text-gray-100 cursor-not-allowed' : 
         `${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText} ${theme.hoverBorder}`}`}
     >
       <PencilIcon className="w-5" />
@@ -85,7 +85,7 @@ export function DeleteInvoice({
   return (
     <form action={deleteInvoiceWithId}>
       <button disabled={disabled} className={`rounded-md border p-2 
-      ${disabled ? 'bg-gray-300 text-gray-100 cursor-not-allowed' : 
+      ${disabled ? 'bg-gray-400 text-gray-100 cursor-not-allowed' : 
       `${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText} ${theme.hoverBorder}`}`}>
         <span className="sr-only">Delete</span>
         <TrashIcon className="w-5" />
@@ -165,7 +165,7 @@ export function DeleteEmployee({
   return (
     <form action={deleteEmployeeWithId}>
       <button disabled={disabled} className={`rounded-md border p-2 
-      ${disabled ? 'bg-gray-300 text-gray-100 cursor-not-allowed' : 
+      ${disabled ? 'bg-gray-400 text-gray-100 cursor-not-allowed' : 
       `${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText} ${theme.hoverBorder}`}`}>
         <span className="sr-only">Delete</span>
         <TrashIcon className="w-5" />
@@ -244,7 +244,7 @@ export function DeleteCustomer({
   return (
     <form action={deleteCustomerWithId}>
       <button disabled={disabled} className={`rounded-md border p-2 
-      ${disabled ? 'bg-gray-300 text-gray-100 cursor-not-allowed' : 
+      ${disabled ? 'bg-gray-400 text-gray-100 cursor-not-allowed' : 
       `${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText} ${theme.hoverBorder}`}`}>
         <span className="sr-only">Delete</span>
         <TrashIcon className="w-5" />

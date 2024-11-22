@@ -5,18 +5,37 @@ import { Invoice } from '@/app/lib/definitions';
 import { themeType } from "@/app/lib/theme";
 import { DocumentArrowUpIcon } from "@heroicons/react/24/outline";
 
-export default function InvoicePDFGenerator({ invoice, theme }: { invoice: Invoice, theme: themeType }) {
+export default function InvoicePDFGenerator({ invoice, disabled, theme }: { invoice: Invoice, disabled: boolean, theme: themeType }) {
 
   const generateInvoicePDF = () => {
-    // Generar filas de la tabla de productos dinámicamente
-    const productsTable = invoice.products.map((product, index) => [
+    // Agrupar productos con el mismo título y sumar las cantidades y subtotales
+    const groupedProducts = invoice.products.reduce((acc, product) => {
+      const existingProduct = acc.find(item => item.title === product.title);
+      
+      if (existingProduct) {
+        // Si el producto ya existe, sumamos la cantidad y actualizamos el total
+        existingProduct.quantity += product.quantity;
+        existingProduct.total += product.price * product.quantity;
+      } else {
+        // Si el producto no existe, lo agregamos al array
+        acc.push({
+          ...product,
+          total: product.price * product.quantity, // Inicializamos el total
+        });
+      }
+      
+      return acc;
+    }, []);
+  
+    // Generar filas de la tabla de productos dinámicamente a partir de los productos agrupados
+    const productsTable = groupedProducts.map((product, index) => [
       index + 1,
       product.title || 'N/A',  // Título del producto
       product.description || 'N/A',  // Descripción del producto
       formatCurrency(product.price),  // Formatear precio
       product.quantity,  // Cantidad
-      product.unit || 'Unit',  // Unidad
-      formatCurrency(product.price * product.quantity),  // Total por producto
+      //product.unit || 'Unit',  // Unidad
+      formatCurrency(product.total),  // Total por producto
     ]);
   
     // Configurar propiedades del PDF
@@ -39,7 +58,7 @@ export default function InvoicePDFGenerator({ invoice, theme }: { invoice: Invoi
         website: "",
       },
       contact: {
-        label: "Invoice issued for:",
+        label: "Factura emitida para:",
         name: invoice.name || 'Client Name',
         address: "Albania, Tirane, Astir",
         phone: "(+355) 069 22 22 222",
@@ -47,17 +66,17 @@ export default function InvoicePDFGenerator({ invoice, theme }: { invoice: Invoi
         otherInfo: "www.website.al",
       },
       invoice: {
-        label: "Invoice #: ",
+        label: "Factura #: ",
         num: invoice.id_tmp,
         invDate: `Fecha de pagar: ${formatDatetoPayToLocal(invoice.fecha_para_pagar) || "N/A"}`,
         invGenDate: `Fecha de generación: ${formatDateToLocal(invoice.fecha_creado)}`,
         header: [
           { title: "#", style: { width: 10 } },
-          { title: "Title", style: { width: 30 } },
-          { title: "Description", style: { width: 80 } },
-          { title: "Price" },
-          { title: "Quantity" },
-          { title: "Unit" },
+          { title: "Nombre", style: { width: 30 } },
+          { title: "Descripcion", style: { width: 80 } },
+          { title: "Precio" },
+          { title: "Cantidad" },
+          //{ title: "Unidad" },
           { title: "Total" },
         ],
         table: productsTable,
@@ -69,14 +88,14 @@ export default function InvoicePDFGenerator({ invoice, theme }: { invoice: Invoi
             style: { fontSize: 14 },
           },
         ],
-        invDescLabel: "Invoice Note",
+        invDescLabel: "Notas de la factura",
         invDesc: "Detalles adicionales de la factura.",
       },
       footer: {
-        text: "The invoice is created on a computer and is valid without the signature and stamp.",
+        text: "La factura se crea en una computadora y es válida sin la firma y el sello.",
       },
       pageEnable: true,
-      pageLabel: "Page ",
+      pageLabel: "Pagina ",
     };
   
     // Generar el PDF base con jsPDFInvoiceTemplate
@@ -93,17 +112,13 @@ export default function InvoicePDFGenerator({ invoice, theme }: { invoice: Invoi
     doc.setFontSize(12).text(`Razón Social: ${invoice.regimenfiscal_cdfi || 'N/A'}`, 10, yPosition + 10);
   
     // Guardar el PDF
-    doc.save(`invoice_${invoice.id}.pdf`);
+    doc.save(`invoiceCDFI_${invoice.id}.pdf`);
   };
   
-  
-  
-  
-
   return (
-    <button className={`btn-generate-pdf rounded-md border p-2
-        ${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText}
-        ${theme.hoverBorder}`} onClick={generateInvoicePDF}>
+    <button disabled={disabled} className={`rounded-md border p-2 
+      ${disabled ? 'bg-gray-400 text-gray-100 cursor-not-allowed' : 
+      `${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText} ${theme.hoverBorder}`}`} onClick={generateInvoicePDF}>
         <DocumentArrowUpIcon className="w-5" />     
     </button>
   );

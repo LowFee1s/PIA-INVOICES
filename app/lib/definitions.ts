@@ -55,6 +55,8 @@ export type Employee = {
   tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
 };
 
+
+
 export type Invoice = {
   id: string;
   id_tmp: number;
@@ -75,6 +77,7 @@ export type Invoice = {
     price: number;
     unit: string;
     title: string;
+    name: string;
     description: string;
   }[];
   // In TypeScript, this is called a string union type.
@@ -116,7 +119,9 @@ export type InvoicesTable = {
     price: number;
     unit: string;
     title: string;
-    description: string;
+    name: string;
+    description: string; 
+    total?: number;
   }[];
   fecha_creado: string;
   fecha_para_pagar: string;
@@ -158,8 +163,8 @@ export type CustomerField = {
 export type Product = {
   id: string;         // productId in the database
   name: string;
+  description: string;
   price: number;
-  quantity: number;   // Assuming each product has a quantity field
 };
 
 export type EmployeesTableType = {

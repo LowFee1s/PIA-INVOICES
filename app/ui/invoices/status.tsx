@@ -17,15 +17,15 @@ export default function InvoiceStatus({
           ${status === 'Pendiente' && `${theme.container}`}
         `,
         {
-          'text-gray-500': status === 'Pendiente',
-          'bg-green-500 text-white': status === 'Pagado',
+          'bg-gray-500 text-white': status === 'Pendiente',
+          'bg-green-700 text-white': status === 'Pagado',
         },
       )}
     >
       {status === 'Pendiente' ? (
         <>
           Pendiente
-          <ClockIcon className="ml-1 w-4 text-gray-500" />
+          <ClockIcon className="ml-1 w-4 text-white" />
         </>
       ) : null}
       {status === 'Pagado' ? (
