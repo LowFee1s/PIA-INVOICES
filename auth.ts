@@ -10,7 +10,7 @@ import bcrypt from 'bcrypt';
 
 async function getUser(email: string): Promise<User | undefined> {
   try {
-    const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
+    const user = await sql<User>`SELECT * FROM employees WHERE email=${email}`;
     if (user.rows[0].isoauth === true) {
       throw new Error('User tried to login using an OAuth account without defining a password first');
     }

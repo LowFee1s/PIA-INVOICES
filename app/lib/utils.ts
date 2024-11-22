@@ -21,6 +21,28 @@ export const formatDateToLocal = (
   return formatter.format(date);
 };
 
+export const formatDatetoPayToLocal = (
+  dateStr: string | null | undefined,
+  locale: string = 'en-MX',
+): string => {
+  if (!dateStr) return '';  // Devuelve una cadena vacía si no hay fecha
+
+  // Añadir una hora predeterminada para evitar efectos de zona horaria
+  const date = new Date(dateStr + 'T12:00:00');  // Añadir las 12:00 del mediodía para evitar ajustes
+  if (isNaN(date.getTime())) return '';  // Si la fecha no es válida, devuelve una cadena vacía
+
+  const options: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  };
+  const formatter = new Intl.DateTimeFormat(locale, options);
+  return formatter.format(date);
+};
+
+
+
+
 export const generateYAxis = (revenue: Revenue[]) => {
   // Calculate what labels we need to display on the y-axis
   // based on highest record and in 1000s

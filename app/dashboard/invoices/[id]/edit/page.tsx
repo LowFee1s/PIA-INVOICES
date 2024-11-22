@@ -53,7 +53,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         ]}
         theme={theme}
       />
-      <Form invoice={invoice} customers={customers} theme={theme} />
+      <Form invoice={invoice} customers={customers} employee={user.id} theme={theme} />
     </main>
   )
 }

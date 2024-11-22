@@ -19,19 +19,27 @@ export function CreateInvoice() {
 
 export function UpdateInvoice({ 
   id,
+  disabled,
   theme 
 }: 
 { 
   id: string;
+  disabled: boolean;
   theme: themeType
 }) {
+
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    if (disabled) {
+      event.preventDefault();
+    }
+  };
   return (
     <Link
       href={`/dashboard/invoices/${id}/edit`}
-      className={`rounded-md border p-2
-        ${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText}
-        ${theme.hoverBorder}
-      `}
+      onClick={handleClick}
+      aria-disabled={disabled} className={`rounded-md border p-2 
+        ${disabled ? 'bg-gray-300 text-gray-100 cursor-not-allowed' : 
+        `${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText} ${theme.hoverBorder}`}`}
     >
       <PencilIcon className="w-5" />
     </Link>
@@ -52,7 +60,7 @@ export function ViewDetailsInvoices({
 }) {
   return (
     
-    <button className={`rounded-md border p-2
+    <button className={`btn-generate-pdf rounded-md border p-2
       ${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText}
       ${theme.hoverBorder}`} onClick={() => onOpen(id)}>
       <DocumentTextIcon className="w-5" />     

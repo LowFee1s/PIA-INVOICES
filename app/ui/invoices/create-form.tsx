@@ -11,7 +11,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '@/app/ui/button';
+import { Button, Button14 } from '@/app/ui/button';
 import { createInvoice } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
 import { themeType } from '@/app/lib/theme';
@@ -24,14 +24,17 @@ type Product = {
 
 export default function Form({ 
   customers,
+  employee,
   theme,
 }: { 
   customers: CustomerField[];
+  employee: string;
   theme: themeType;
 }) {
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useFormState(createInvoice, initialState);
   const [isPaid, setIsPaid] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [total, setTotal] = useState(0);
@@ -54,13 +57,20 @@ export default function Form({
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsPaid(e.target.value === 'Pagado');
+    setIsPending(false);
   };
 
+  const handleStatusChange2 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsPending(e.target.value === 'Pendiente');
+    setIsPaid(false);
+  };
+  
   const handleAddProduct = () => {
     if (!selectedProductId) return;
     const product = products.find((p) => p.id === selectedProductId);
     if (product) {
-      setSelectedProducts((prev) => [...prev, product]);
+      // Assume quantity is always 1 for now
+      setSelectedProducts((prev) => [...prev, { ...product, quantity: 1 }]);
       setTotal((prev) => prev + product.price);
     }
     setSelectedProductId('');
@@ -100,7 +110,7 @@ export default function Form({
               </option>
               {customers.map((customer) => (
                 <option key={customer.id} value={customer.id}>
-                  {customer.name}
+                  {`${customer.name} - ${customer.id}`}
                 </option>
               ))}
             </select>
@@ -184,7 +194,16 @@ export default function Form({
               <PlusIcon className="h-5 w-5" />
             </Button>
           </div>
+          <div id="status-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.amount &&
+              state.errors.amount.map((error: string) => (
+                <p className="mt-2 text-sm text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
+          </div>
         </div>
+        
 
         {/* Selected Products Table */}
         {selectedProducts.length > 0 && (
@@ -201,16 +220,16 @@ export default function Form({
               <tbody>
                 {selectedProducts.map((product, index) => (
                   <tr key={index} className={`border-b ${theme.border}`}>
-                    <td className="py-2">{product.name}</td>
-                    <td className="py-2 text-right">${product.price.toFixed(2)}</td>
-                    <td className="py-2 text-center">
-                      <Button
+                    <td className="py-2 align-middle">{product.name}</td>
+                    <td className="py-2 text-right align-middle">${product.price.toFixed(2)}</td>
+                    <td className="py-2 align-middle text-center">
+                      <Button14
                         type="button"
                         onClick={() => handleRemoveProduct(index)}
-                        className="text-red-500"
+                        className="text-red-500 items-center justify-center"
                       >
                         <TrashIcon className="h-5 w-5" />
-                      </Button>
+                      </Button14>
                     </td>
                   </tr>
                 ))}
@@ -220,6 +239,9 @@ export default function Form({
               <p className={`text-lg font-bold ${theme.text}`}>
                 Total: ${total.toFixed(2)}
               </p>
+              <input type="hidden" id='amount' name='amount' value={total.toFixed(2)}/>
+              <input type="hidden" id='employee' name='employee' value={employee}/>
+              <input type="hidden" id='products' name='products' value={JSON.stringify(selectedProducts)}/>
             </div>
           </div>
         )}
@@ -239,7 +261,7 @@ export default function Form({
                   value="Pendiente"
                   className={`h-4 w-4 cursor-pointer text-gray-600 focus:ring-2 ${theme.container} ${theme.border}`}
                   aria-describedby="status-error"
-                  onChange={handleStatusChange}
+                  onChange={handleStatusChange2}
                 />
                 <label
                   htmlFor="pendiente"
@@ -276,7 +298,28 @@ export default function Form({
                 </p>
               ))}
           </div>
+          
         </fieldset>
+
+        {isPending && (
+          <div className="mt-4 space-y-4">
+            {/* Fecha máxima a pagar */}
+            <div>
+              <label htmlFor="fecha_maxima" className={`mb-2 block text-sm font-medium ${theme.text}`}>
+                Fecha máxima a pagar:
+              </label>
+              <input
+                type="date"
+                id="fecha_maxima"
+                name="fecha_maxima"
+                className={`peer block w-full rounded-md border 
+                  py-2 text-sm outline-2 placeholder:text-gray-500
+                  ${theme.border} ${theme.bg} ${theme.text}`}
+              />
+            </div>
+          </div>
+        )}
+
 
         {/* Additional Fields for "Pagado" */}
           {isPaid && (
@@ -311,7 +354,7 @@ export default function Form({
                   py-2 text-sm outline-2 placeholder:text-gray-500
                   ${theme.border} ${theme.bg} ${theme.text}`}
               >
-                <option value="Persona Física">Persona Física</option>
+                <option value="Persona Fisica">Persona Física</option>
                 <option value="Persona Moral">Persona Moral</option>
               </select>
             </div>
@@ -328,7 +371,7 @@ export default function Form({
                   py-2 text-sm outline-2 placeholder:text-gray-500
                   ${theme.border} ${theme.bg} ${theme.text}`}
               >
-                <option value="Tarjeta de Débito">Tarjeta de Credito/Debito</option>
+                <option value="Tarjeta de Debito">Tarjeta de Credito/Debito</option>
                 <option value="Efectivo">Efectivo</option>
               </select>
             </div>

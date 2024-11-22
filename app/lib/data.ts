@@ -16,7 +16,7 @@ import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
 import { auth } from '@/auth';
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 7;
 
 // (async ()=> {
 //   // automatically deleting registries that has more than 1 week of existence
@@ -42,29 +42,29 @@ export async function fetchRevenue() {
     const userEmail = session?.user?.email!;
 
     const data = await sql<Revenue>`
-      SELECT SUM(i.amount) AS revenue,
-       CASE EXTRACT(MONTH FROM i.date)
-           WHEN 1 THEN 'Jan'
-           WHEN 2 THEN 'Feb'
-           WHEN 3 THEN 'Mar'
-           WHEN 4 THEN 'Apr'
-           WHEN 5 THEN 'May'
-           WHEN 6 THEN 'Jun'
-           WHEN 7 THEN 'Jul'
-           WHEN 8 THEN 'Aug'
-           WHEN 9 THEN 'Sep'
-           WHEN 10 THEN 'Oct'
-           WHEN 11 THEN 'Nov'
-           WHEN 12 THEN 'Dec'
-            END AS month
+  SELECT SUM(i.amount) AS revenue,
+   CASE EXTRACT(MONTH FROM i.fecha_creado)  -- Usa el nombre correcto de la columna
+       WHEN 1 THEN 'Jan'
+       WHEN 2 THEN 'Feb'
+       WHEN 3 THEN 'Mar'
+       WHEN 4 THEN 'Apr'
+       WHEN 5 THEN 'May'
+       WHEN 6 THEN 'Jun'
+       WHEN 7 THEN 'Jul'
+       WHEN 8 THEN 'Aug'
+       WHEN 9 THEN 'Sep'
+       WHEN 10 THEN 'Oct'
+       WHEN 11 THEN 'Nov'
+       WHEN 12 THEN 'Dec'
+        END AS month
       FROM invoices AS i
       INNER JOIN customers AS c ON i.customer_id = c.id
-      WHERE c.email = ${userEmail}
-        AND i.status = 'paid'
-        AND EXTRACT(YEAR FROM i.date) = EXTRACT(YEAR FROM CURRENT_DATE)
-      GROUP BY EXTRACT(MONTH FROM i.date)
+      WHERE i.status = 'Pagado'
+        AND EXTRACT(YEAR FROM i.fecha_creado) = EXTRACT(YEAR FROM CURRENT_DATE)
+      GROUP BY EXTRACT(MONTH FROM i.fecha_creado)
       ORDER BY month;
-      `;
+    `;
+
 
     // console.log('Data fetch completed after 3 seconds.');
 
@@ -80,12 +80,11 @@ export async function fetchLatestInvoices(userEmail: string) {
   
   try {
     const data = await sql<LatestInvoiceRaw>`
-      SELECT invoices.amount, customers.name, customers.email, invoices.id
+      SELECT invoices.amount, customers.name, customers.email, invoices.id, invoices.status
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
-      WHERE
-        customers.email = ${userEmail}
-      ORDER BY invoices.fecha_creado DESC
+      
+      ORDER BY invoices.id_tmp DESC
       LIMIT 5`;
 
     const latestInvoices = data.rows.map((invoice) => ({
@@ -113,22 +112,20 @@ export async function fetchCardData(userEmail: string) {
         invoices
       JOIN 
         customers ON invoices.customer_id = customers.id
-      WHERE 
-        customers.email = ${userEmail}`;
+      `;
 
     const customerCountPromise = sql`SELECT COUNT(*) FROM customers
-      WHERE customers.email = ${userEmail};`;
+      `;
 
     const invoiceStatusPromise = sql`
     SELECT
-      SUM(CASE WHEN status = 'Pagado' THEN amount ELSE 0 END) AS "Pagado",
-      SUM(CASE WHEN status = 'Pendiente' THEN amount ELSE 0 END) AS "Pendiente"
+      SUM(CASE WHEN status = 'Pagado' THEN amount ELSE 0 END) AS "paid",
+      SUM(CASE WHEN status = 'Pendiente' THEN amount ELSE 0 END) AS "pending"
     FROM 
       invoices
     JOIN 
       customers ON invoices.customer_id = customers.id
-    WHERE 
-      customers.email = ${userEmail}`;
+    `;
 
     const data = await Promise.all([
       invoiceCountPromise,
@@ -153,6 +150,56 @@ export async function fetchCardData(userEmail: string) {
   }
 }
 
+// export async function fetchFilteredInvoices(
+//   query: string,
+//   currentPage: number,
+//   userEmail: string
+// ) {
+//   noStore();
+
+//   // Si el query ha cambiado, resetear la página a 1
+//   const pageToFetch = query ? 1 : currentPage;
+//   const offset = (pageToFetch - 1) * ITEMS_PER_PAGE;
+
+//   try {
+//     const invoices = await sql<InvoicesTable>`
+//       SELECT
+//         invoices.id,
+//         invoices.amount,
+//         invoices.fecha_creado,
+//         invoices.fecha_para_pagar,
+//         invoices.status,
+//         customers.name,
+//         customers.email
+//       FROM invoices
+//       JOIN customers ON invoices.customer_id = customers.id
+//       WHERE
+       
+//         (customers.name ILIKE ${`%${query}%`} OR
+//         customers.email ILIKE ${`%${query}%`} OR
+//         invoices.id::text ILIKE ${`%${query}%`} OR
+//         invoices.fecha_creado::text ILIKE ${`%${query}%`} OR
+//         invoices.status ILIKE ${`%${query}%`})
+//       ORDER BY invoices.id_tmp DESC
+//       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+//     `;
+
+//     // Verificar si hay resultados
+//     if (invoices.rows.length === 0) {
+//       console.warn('No invoices found for the current page.');
+//     }
+
+//     return invoices.rows;
+//   } catch (error) {
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch invoices.');
+//   }
+// }
+
+
+// This function fetches filtered invoices and their associated products
+
+
 export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
@@ -160,36 +207,70 @@ export async function fetchFilteredInvoices(
 ) {
   noStore();
 
-  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const pageToFetch = query ? 1 : currentPage;
+  const offset = (pageToFetch - 1) * ITEMS_PER_PAGE;
 
   try {
+    // Fetch invoices data (no detailed products yet)
     const invoices = await sql<InvoicesTable>`
       SELECT
         invoices.id,
+        invoices.id_tmp,
         invoices.amount,
         invoices.fecha_creado,
+        invoices.fecha_para_pagar,
         invoices.status,
         customers.name,
         customers.email
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
       WHERE
-        customers.email = ${userEmail} AND
         (customers.name ILIKE ${`%${query}%`} OR
         customers.email ILIKE ${`%${query}%`} OR
-        invoices.amount::text ILIKE ${`%${query}%`} OR
+        invoices.id::text ILIKE ${`%${query}%`} OR
         invoices.fecha_creado::text ILIKE ${`%${query}%`} OR
         invoices.status ILIKE ${`%${query}%`})
-      ORDER BY invoices.fecha_creado DESC
+      ORDER BY invoices.id_tmp DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
 
-    return invoices.rows;
+    // Fetch products data separately
+    const products = await sql`
+      SELECT
+        invoice_id,
+        product_id,
+        quantity,
+        price
+      FROM invoice_items
+    `;
+
+    // Process invoices and map products to each invoice
+    const processedInvoices = invoices.rows.map((invoice) => {
+      const invoiceProducts = products.rows.filter(
+        (product) => product.invoice_id === invoice.id
+      );
+
+      return {
+        ...invoice,
+        products: invoiceProducts.map((product) => ({
+          product_id: product.product_id,
+          quantity: product.quantity,
+          price: product.price,
+        })),
+      };
+    });
+
+    return processedInvoices;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoices.');
   }
 }
+
+
+
+
+
 
 export async function fetchInvoicesPages(query: string, userEmail: string) {
   noStore();
@@ -199,7 +280,7 @@ export async function fetchInvoicesPages(query: string, userEmail: string) {
     FROM invoices
     JOIN customers ON invoices.customer_id = customers.id
     WHERE
-      customers.email = ${userEmail} AND 
+      
       (customers.name ILIKE ${`%${query}%`} OR
       customers.email ILIKE ${`%${query}%`} OR
       invoices.amount::text ILIKE ${`%${query}%`} OR
@@ -224,6 +305,13 @@ export async function fetchInvoiceById(id: string, userEmail: string) {
         invoices.id,
         invoices.customer_id,
         invoices.amount,
+        invoices.employee_id,
+        invoices.modo_pago,
+        invoices.usocliente_cdfi,
+        invoices.regimenfiscal_cdfi,
+        invoices.fecha_para_pagar,
+        invoices.fecha_pago,
+        invoices.fecha_creado,
         invoices.status
       FROM 
         invoices 
@@ -259,7 +347,6 @@ export async function fetchCustomers(userEmail: string) {
         id,
         name
       FROM customers
-      where customers.email = ${userEmail}
       ORDER BY name ASC
     `;
 
@@ -278,27 +365,30 @@ export async function fetchFilteredCustomers(query: string, currentPage: number,
   
   try {
     const data = await sql<CustomersTableType>`
-		SELECT
-		  customers.id,
-		  customers.name,
-		  customers.email,
-      customers.rfc, 
-      customers.direccion,  
-      customers.telefono,  
-      customers.tipo_cliente,
-      customers.fecha_creado,
-		  COUNT(invoices.id) AS total_invoices,
-		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
-		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
-		FROM customers
-		LEFT JOIN invoices ON customers.id = invoices.customer_id
-		WHERE
-		  (customers.name ILIKE ${`%${query}%`} OR
-      customers.email ILIKE ${`%${query}%`})
-		GROUP BY customers.id, customers.name, customers.email, customers
-		ORDER BY customers.fecha_creado ASC
-    LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-	  `;
+      SELECT
+        customers.id,
+        customers.name,
+        customers.email,
+        customers.rfc,
+        customers.direccion,
+        customers.telefono,
+        customers.tipo_cliente,
+        customers.fecha_creado,
+        COUNT(invoices.id) AS total_invoices,
+        SUM(CASE WHEN invoices.status = 'Pendiente' THEN invoices.amount ELSE 0 END) AS total_pending,
+        SUM(CASE WHEN invoices.status = 'Pagado' THEN invoices.amount ELSE 0 END) AS total_paid
+      FROM customers
+      LEFT JOIN invoices ON customers.id = invoices.customer_id
+      WHERE
+        (
+          customers.name ILIKE ${`%${query}%`} OR
+          customers.id::text ILIKE ${`%${query}%`} OR
+          customers.email ILIKE ${`%${query}%`}
+        )
+      GROUP BY customers.id, customers.name, customers.email, customers.rfc, customers.direccion, customers.telefono, customers.tipo_cliente, customers.fecha_creado
+      ORDER BY customers.fecha_creado ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
 
     const customers = data.rows.map((customer) => ({
       ...customer,
@@ -312,6 +402,7 @@ export async function fetchFilteredCustomers(query: string, currentPage: number,
     throw new Error('Failed to fetch customer table.');
   }
 }
+
 
 export async function fetchCustomersPages(query: string, userEmail: string) {
   noStore();
@@ -383,38 +474,50 @@ export async function fetchFilteredEmployees(query: string, currentPage: number,
   
   try {
     const data = await sql<EmployeesTableType>`
-		SELECT
-		  employees.id,
-		  employees.name,
-		  employees.email,
-      employees.rfc, 
-      employees.direccion,  
-      employees.telefono,  
-      employees.tipo_empleado,
-      employees.fecha_creado,
-		  COUNT(invoices.id) AS total_invoices,
-      SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
-      SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
-		FROM employees
-		LEFT JOIN invoices ON employees.id = invoices.employee_id
-		WHERE
-		  (employees.name ILIKE ${`%${query}%`} OR
-      employees.tipo_empleado ILIKE ${`%${query}%`})
-		GROUP BY employees.id, employees.name, employees.tipo_empleado, employees
-		ORDER BY employees.fecha_creado DESC
-    LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-	  `;
+      SELECT
+        employees.id,
+        employees.name,
+        employees.email,
+        employees.rfc, 
+        employees.direccion,  
+        employees.telefono,  
+        employees.tipo_empleado,
+        employees.fecha_creado,
+        COUNT(invoices.id) AS total_invoices,  -- Cuenta el total de facturas asociadas
+        SUM(CASE WHEN invoices.status = 'Pendiente' THEN invoices.amount ELSE 0 END) AS total_pending,
+        SUM(CASE WHEN invoices.status = 'Pagado' THEN invoices.amount ELSE 0 END) AS total_paid
+      FROM employees
+      LEFT JOIN invoices ON employees.id = invoices.employee_id
+      WHERE
+        (employees.name ILIKE ${`%${query}%`} OR
+        employees.tipo_empleado ILIKE ${`%${query}%`})
+      GROUP BY 
+        employees.id, 
+        employees.name, 
+        employees.email,
+        employees.rfc,
+        employees.direccion,
+        employees.telefono,
+        employees.tipo_empleado,
+        employees.fecha_creado  -- Asegúrate de incluir todas las columnas de employees en el GROUP BY
+      ORDER BY employees.fecha_creado DESC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
 
     const employees = data.rows.map((employee) => ({
       ...employee,
+      total_invoices: Number(employee.total_invoices),  // Convierte total_invoices a un número
     }));
 
+    console.log(employees);
+    
     return employees;
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch employee table.');
   }
 }
+
 
 export async function fetchEmployeesPages(query: string, userEmail: string) {
   noStore();
@@ -459,6 +562,19 @@ export async function fetchEmployeeById(id: string, userEmail: string) {
 
 
 export async function getUser(userEmail: string) {
+  noStore();
+  
+  try {
+    const user = await sql`SELECT * FROM employees WHERE email = ${userEmail}`;
+    return user.rows[0] as User;
+  } catch (error) {
+    console.error('Failed to fetch user:', error);
+    throw new Error('Failed to fetch user.');
+  }
+}
+
+
+export async function getUser1(userEmail: string) {
   noStore();
   
   try {

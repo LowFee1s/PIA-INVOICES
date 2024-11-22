@@ -37,20 +37,34 @@ export default async function LatestInvoices({theme}:{theme: themeType}) {
               >
                 <div className="flex items-center">
                   <div className="min-w-0">
-                    <p className={`truncate text-sm font-semibold md:text-base ${theme.title}`}>
+                    <p className={`truncate text-xs font-semibold md:text-base ${theme.title}`}>
                       {invoice.name}
                     </p>
-                    <p className="hidden text-sm text-gray-500 sm:block">
+                    <p className="hidden text-xs text-gray-500 sm:block">
                       {invoice.email}
                     </p>
                   </div>
                 </div>
-                <p
-                  className={`${lusitana.className} truncate text-sm font-medium md:text-base 
+              
+
+                <div className="flex items-center">
+                  <div className="min-w-0">
+                      <p
+                      className={`$ truncate text-xs text-end font-semibold md:text-base 
+                        ${theme.title}
+                      `}>
+                      {invoice.amount}
+                    </p>
+                    <p
+                  className={`truncate text-xs text-end text-gray-500 font-medium md:text-base 
                     ${theme.title}
                   `}>
-                  {invoice.amount}
+                  {invoice.status}
                 </p>
+                  </div>
+                </div>
+                
+               
               </div>
             );
           })}

@@ -64,8 +64,10 @@ export default function Form({
               </p>
           )}
         </div> */}
+      <h1 className={`text-sm text-gray-500 ${theme.title}`}>Identificador de usuario: {user.id}</h1>
 
-        <div className="mb-4">
+        <div className="mt-4">
+          
           <label htmlFor="name" className={`mb-2 block text-sm font-medium
             ${theme.text}
           `}>

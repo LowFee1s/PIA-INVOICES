@@ -2,14 +2,29 @@
 // It describes the shape of the data, and what data type each property should accept.
 // For simplicity of teaching, we're manually defining these types.
 // However, these types are generated automatically if you're using an ORM such as Prisma.
+// export type User = {
+//   id: string;
+//   name: string;
+//   email: string;
+//   password: string;
+//   isoauth: boolean;
+//   theme: 'system' | 'dark' | 'light';
+// };
+
 export type User = {
   id: string;
   name: string;
   email: string;
+  rfc: string;
+  fecha_creado: Date;
+  total_invoices: number;
+  direccion: string;
+  telefono: string;
   password: string;
   isoauth: boolean;
   theme: 'system' | 'dark' | 'light';
-};
+  tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
+}
 
 export type Customer = {
   id: string;
@@ -42,6 +57,7 @@ export type Employee = {
 
 export type Invoice = {
   id: string;
+  id_tmp: number;
   customer_id: string;
   employee_id: string;
   name: string;
@@ -53,6 +69,14 @@ export type Invoice = {
   fecha_creado: string;
   fecha_para_pagar: string;
   fecha_pago: string;
+  products: {
+    product_id: string;
+    quantity: number;
+    price: number;
+    unit: string;
+    title: string;
+    description: string;
+  }[];
   // In TypeScript, this is called a string union type.
   // It means that the "status" property can only be one of the two strings: 'pending' or 'paid'.
   status: 'Pendiente' | 'Pagado';
@@ -73,6 +97,7 @@ export type LatestInvoice = {
 // The database returns a number for amount, but we later format it to a string with the formatCurrency function
 export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
   amount: number;
+  status: 'Pendiente' | 'Pagado';
 };
 
 export type InvoicesTable = {
@@ -85,6 +110,14 @@ export type InvoicesTable = {
   usocliente_cdfi: string;
   regimenfiscal_cdfi: string;
   amount: number;
+  products: {
+    product_id: string;
+    quantity: number;
+    price: number;
+    unit: string;
+    title: string;
+    description: string;
+  }[];
   fecha_creado: string;
   fecha_para_pagar: string;
   fecha_pago: string;
@@ -123,9 +156,10 @@ export type CustomerField = {
 };
 
 export type Product = {
-  id: string;
+  id: string;         // productId in the database
   name: string;
   price: number;
+  quantity: number;   // Assuming each product has a quantity field
 };
 
 export type EmployeesTableType = {
@@ -164,6 +198,7 @@ export type InvoiceForm = {
   regimenfiscal_cdfi: string;
   fecha_pago: string;
   fecha_para_pagar: string;
+  fecha_creado: string;
   amount: number;
   status: 'Pendiente' | 'Pagado';
 };

@@ -19,58 +19,58 @@ export default function Pagination({
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
 
+  // Evitar que la página actual sea menor que 1 o mayor que el total de páginas
+  const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
+
   const createPageURL = (pageNumber: number | string) => {
     const params = new URLSearchParams(searchParams);
     params.set('page', pageNumber.toString());
     return `${pathname}?${params.toString()}`;
   };
 
-  // NOTE: comment in this code when you get to this point in the course
-
-  const allPages = generatePagination(currentPage, totalPages);
+  // Generar las páginas de la paginación
+  const allPages = generatePagination(safeCurrentPage, totalPages);
 
   return (
-    <>
-      {/* NOTE: comment in this code when you get to this point in the course */}
+    <div className="inline-flex">
+      {/* Flecha izquierda */}
+      <PaginationArrow
+        direction="left"
+        href={createPageURL(safeCurrentPage - 1)}
+        isDisabled={safeCurrentPage <= 1}  
+        theme={theme}
+      />
 
-      <div className="inline-flex">
-        <PaginationArrow
-          direction="left"
-          href={createPageURL(currentPage - 1)}
-          isDisabled={currentPage <= 1}
-          theme={theme}
-        />
+      <div className="flex -space-x-px">
+        {allPages.map((page, index) => {
+          let position: 'first' | 'last' | 'single' | 'middle' | undefined;
 
-        <div className="flex -space-x-px">
-          {allPages.map((page, index) => {
-            let position: 'first' | 'last' | 'single' | 'middle' | undefined;
+          if (index === 0) position = 'first';
+          if (index === allPages.length - 1) position = 'last';
+          if (allPages.length === 1) position = 'single';
+          if (page === '...') position = 'middle';
 
-            if (index === 0) position = 'first';
-            if (index === allPages.length - 1) position = 'last';
-            if (allPages.length === 1) position = 'single';
-            if (page === '...') position = 'middle';
-
-            return (
-              <PaginationNumber
-                key={page}
-                href={createPageURL(page)}
-                page={page}
-                position={position}
-                isActive={currentPage === page}
-                theme={theme}
-              />
-            );
-          })}
-        </div>
-
-        <PaginationArrow
-          direction="right"
-          href={createPageURL(currentPage + 1)}
-          isDisabled={currentPage >= totalPages}
-          theme={theme}
-        />
+          return (
+            <PaginationNumber
+              key={page}
+              href={createPageURL(page)}
+              page={page}
+              position={position}
+              isActive={safeCurrentPage === page}
+              theme={theme}
+            />
+          );
+        })}
       </div>
-    </>
+
+      {/* Flecha derecha */}
+      <PaginationArrow
+        direction="right"
+        href={createPageURL(safeCurrentPage + 1)}
+        isDisabled={safeCurrentPage >= totalPages}
+        theme={theme}
+      />
+    </div>
   );
 }
 
@@ -91,9 +91,8 @@ function PaginationNumber({
     `flex h-10 w-10 items-center justify-center text-sm border
       ${theme.border} ${theme.text}
       ${(!isActive && position !== 'middle') && 
-        `${theme.hoverBorder} ${theme.hoverBg} ${theme.hoverText}`
-      }
-    `,
+        `${theme.hoverBorder} ${theme.hoverBg} ${theme.hoverText}`}`
+    ,
     {
       'rounded-l-md': position === 'first' || position === 'single',
       'rounded-r-md': position === 'last' || position === 'single',
