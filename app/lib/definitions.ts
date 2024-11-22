@@ -15,16 +15,47 @@ export type Customer = {
   id: string;
   name: string;
   email: string;
+  rfc: string;
+  fecha_creado: Date;
+  total_invoices: number;
+  total_paid: number;
+  total_pending: number;
+  direccion: string;
+  telefono: string;
+  tipo_cliente: "Normal" | "Asociado";
+};
+
+export type Employee = {
+  id: string;
+  name: string;
+  email: string;
+  rfc: string;
+  fecha_creado: Date;
+  total_invoices: number;
+  direccion: string;
+  telefono: string;
+  password: string;
+  isoauth: boolean;
+  theme: 'system' | 'dark' | 'light';
+  tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
 };
 
 export type Invoice = {
   id: string;
   customer_id: string;
+  employee_id: string;
+  name: string;
+  email: string;
+  modo_pago: 'Tarjeta de Credito/Debito' | 'Efectivo';
+  usocliente_cdfi: string;
+  regimenfiscal_cdfi: string;
   amount: number;
-  date: string;
+  fecha_creado: string;
+  fecha_para_pagar: string;
+  fecha_pago: string;
   // In TypeScript, this is called a string union type.
   // It means that the "status" property can only be one of the two strings: 'pending' or 'paid'.
-  status: 'pending' | 'paid';
+  status: 'Pendiente' | 'Pagado';
 };
 
 export type Revenue = {
@@ -47,12 +78,21 @@ export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
 export type InvoicesTable = {
   id: string;
   customer_id: string;
+  employee_id: string;
   name: string;
   email: string;
-  date: string;
+  modo_pago: 'Tarjeta de Credito/Debito' | 'Efectivo';
+  usocliente_cdfi: string;
+  regimenfiscal_cdfi: string;
   amount: number;
-  status: 'pending' | 'paid';
+  fecha_creado: string;
+  fecha_para_pagar: string;
+  fecha_pago: string;
+  status: 'Pendiente' | 'Pagado';
 };
+
+
+
 
 export type CustomersTableType = {
   id: string;
@@ -61,6 +101,11 @@ export type CustomersTableType = {
   total_invoices: number;
   total_pending: number;
   total_paid: number;
+  rfc: string;
+  fecha_creado: Date;
+  direccion: string;
+  telefono: string;
+  tipo_cliente: "Normal" | "Asociado";
 };
 
 export type FormattedCustomersTable = {
@@ -77,15 +122,71 @@ export type CustomerField = {
   name: string;
 };
 
+export type Product = {
+  id: string;
+  name: string;
+  price: number;
+};
+
+export type EmployeesTableType = {
+  id: string;
+  name: string;
+  email: string;
+  rfc: string;
+  fecha_creado: Date;
+  total_invoices: number;
+  isoauth: boolean;
+  password: string;
+  direccion: string;
+  telefono: string;
+  theme: 'system' | 'dark' | 'light';
+  tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
+};
+
+export type FormattedEmployeesTable = {
+  id: string;
+  name: string;
+  email: string;
+  total_invoices: number;
+};
+
+export type EmployeeField = {
+  id: string;
+  name: string;
+};
+
 export type InvoiceForm = {
   id: string;
   customer_id: string;
+  employee_id: string;
+  modo_pago: 'Tarjeta de Credito/Debito' | 'Efectivo';
+  usocliente_cdfi: string;
+  regimenfiscal_cdfi: string;
+  fecha_pago: string;
+  fecha_para_pagar: string;
   amount: number;
-  status: 'pending' | 'paid';
+  status: 'Pendiente' | 'Pagado';
 };
 
 export type CustomerForm = {
   id: string;
   name: string;
   email: string;
+  rfc: string;
+  direccion: string;
+  telefono: string;
+  tipo_cliente: "Normal" | "Asociado";
 };
+
+export type EmployeeForm = {
+  id: string;
+  name: string;
+  email: string;
+  rfc: string;
+  direccion: string;
+  telefono: string;
+  tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
+};
+
+
+

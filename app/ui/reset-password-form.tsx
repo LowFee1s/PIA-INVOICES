@@ -15,7 +15,7 @@ export default function Form({token} :
 ) {
 	
 	const resetPasswordWithToken = resetPassword.bind(null, token);
-  const [errorMessage, dispatch] = useFormState(resetPasswordWithToken, undefined);
+  	const [errorMessage, dispatch] = useFormState(resetPasswordWithToken, undefined);
 
 	return (
 		<form action={dispatch}>

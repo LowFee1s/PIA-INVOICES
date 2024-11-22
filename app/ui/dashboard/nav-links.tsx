@@ -6,6 +6,7 @@ import {
   DocumentDuplicateIcon,
   UserIcon,
   Cog6ToothIcon,
+  BriefcaseIcon,
   
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -22,6 +23,7 @@ const links = [
     href: '/dashboard/invoices',
     icon: DocumentDuplicateIcon,
   },
+  { name: 'Employees', href: '/dashboard/employees', icon: BriefcaseIcon },
   { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
   { name: 'My Account', href: '/dashboard/user-profile', icon: UserIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon }

@@ -128,6 +128,52 @@ async function seedCustomers(client) {
   }
 }
 
+
+async function seedEmployees(client) {
+  try {
+    await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+
+    // Create the "customers" table if it doesn't exist
+    const createTable = await client.sql`
+      CREATE TABLE IF NOT EXISTS employees (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NULL,
+        telefono VARCHAR(30) NOT NULL,
+        direccion VARCHAR(255) NOT NULL,
+        rfc VARCHAR(40) NOT NULL,
+        tipo_empleado VARCHAR(30) NOT NULL,
+        image_url TEXT NULL,
+        password TEXT NOT NULL,
+        fecha_creado DATE NOT NULL
+      );
+    `;
+
+    console.log(`Created "customers" table`);
+
+    // // Insert data into the "customers" table
+    // const insertedCustomers = await Promise.all(
+    //   customers.map(
+    //     (customer) => client.sql`
+    //     INSERT INTO customers (id, name, email, image_url)
+    //     VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
+    //     ON CONFLICT (id) DO NOTHING;
+    //   `,
+    //   ),
+    // );
+
+    // console.log(`Seeded ${insertedCustomers.length} customers`);
+
+    return {
+      createTable,
+      //customers: insertedCustomers,
+    };
+  } catch (error) {
+    console.error('Error seeding customers:', error);
+    throw error;
+  }
+}
+
 async function seedRevenue(client) {
   try {
     // Create the "revenue" table if it doesn't exist
@@ -168,6 +214,7 @@ async function main() {
 
   await seedUsers(client);
   await seedCustomers(client);
+  await seedEmployees(client);
   await seedInvoices(client);
   await seedRevenue(client);
 

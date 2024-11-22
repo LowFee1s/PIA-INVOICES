@@ -8,6 +8,9 @@ import {
   User,
   Revenue,
   CustomerForm,
+  EmployeeField,
+  EmployeesTableType,
+  EmployeeForm,
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -15,14 +18,14 @@ import { auth } from '@/auth';
 
 const ITEMS_PER_PAGE = 6;
 
-(async ()=> {
-  // automatically deleting registries that has more than 1 week of existence
-  try {
-    await sql`DELETE FROM users WHERE creation_date < NOW() - INTERVAL '1 week';`;
-  } catch(error) {
-    console.log(error);
-  }
-})();
+// (async ()=> {
+//   // automatically deleting registries that has more than 1 week of existence
+//   try {
+//     await sql`DELETE FROM users WHERE creation_date < NOW() - INTERVAL '1 week';`;
+//   } catch(error) {
+//     console.log(error);
+//   }
+// })();
 
 export async function fetchRevenue() {
   // Add noStore() here prevent the response from being cached.
@@ -82,7 +85,7 @@ export async function fetchLatestInvoices(userEmail: string) {
       JOIN customers ON invoices.customer_id = customers.id
       WHERE
         customers.email = ${userEmail}
-      ORDER BY invoices.date DESC
+      ORDER BY invoices.fecha_creado DESC
       LIMIT 5`;
 
     const latestInvoices = data.rows.map((invoice) => ({
@@ -118,8 +121,8 @@ export async function fetchCardData(userEmail: string) {
 
     const invoiceStatusPromise = sql`
     SELECT
-      SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-      SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
+      SUM(CASE WHEN status = 'Pagado' THEN amount ELSE 0 END) AS "Pagado",
+      SUM(CASE WHEN status = 'Pendiente' THEN amount ELSE 0 END) AS "Pendiente"
     FROM 
       invoices
     JOIN 
@@ -164,7 +167,7 @@ export async function fetchFilteredInvoices(
       SELECT
         invoices.id,
         invoices.amount,
-        invoices.date,
+        invoices.fecha_creado,
         invoices.status,
         customers.name,
         customers.email
@@ -175,9 +178,9 @@ export async function fetchFilteredInvoices(
         (customers.name ILIKE ${`%${query}%`} OR
         customers.email ILIKE ${`%${query}%`} OR
         invoices.amount::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
+        invoices.fecha_creado::text ILIKE ${`%${query}%`} OR
         invoices.status ILIKE ${`%${query}%`})
-      ORDER BY invoices.date DESC
+      ORDER BY invoices.fecha_creado DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
 
@@ -200,7 +203,7 @@ export async function fetchInvoicesPages(query: string, userEmail: string) {
       (customers.name ILIKE ${`%${query}%`} OR
       customers.email ILIKE ${`%${query}%`} OR
       invoices.amount::text ILIKE ${`%${query}%`} OR
-      invoices.date::text ILIKE ${`%${query}%`} OR
+      invoices.fecha_creado::text ILIKE ${`%${query}%`} OR
       invoices.status ILIKE ${`%${query}%`})
   `;
 
@@ -279,24 +282,28 @@ export async function fetchFilteredCustomers(query: string, currentPage: number,
 		  customers.id,
 		  customers.name,
 		  customers.email,
+      customers.rfc, 
+      customers.direccion,  
+      customers.telefono,  
+      customers.tipo_cliente,
+      customers.fecha_creado,
 		  COUNT(invoices.id) AS total_invoices,
 		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
 		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
 		FROM customers
 		LEFT JOIN invoices ON customers.id = invoices.customer_id
 		WHERE
-      
 		  (customers.name ILIKE ${`%${query}%`} OR
       customers.email ILIKE ${`%${query}%`})
 		GROUP BY customers.id, customers.name, customers.email, customers
-		ORDER BY customers.name ASC
+		ORDER BY customers.fecha_creado ASC
     LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
 	  `;
 
     const customers = data.rows.map((customer) => ({
       ...customer,
-      total_pending: formatCurrency(customer.total_pending),
-      total_paid: formatCurrency(customer.total_paid),
+      total_pending: Number(customer.total_pending),
+      total_paid: Number(customer.total_paid),
     }));
 
     return customers;
@@ -332,11 +339,9 @@ export async function fetchCustomerById(id: string, userEmail: string) {
   try {
     const customer = await sql<CustomerForm>`
       SELECT
-        id, name, email
+        id, name, email, rfc, direccion, telefono, tipo_cliente, fecha_creado
       FROM customers
       WHERE
-        customers.email = ${userEmail} 
-          AND
         id = ${id};
     `;
 
@@ -348,6 +353,110 @@ export async function fetchCustomerById(id: string, userEmail: string) {
     return false // we can't return an error, because it can break the not-found functionality at app\dashboard\invoices\[id]\edit\not-found.tsx
   }
 }
+
+
+export async function fetchEmployees(userEmail: string) {
+  noStore();
+
+  try {
+    const data = await sql<EmployeeField>`
+      SELECT
+        id,
+        name
+      FROM employees
+      where employees.email = ${userEmail}
+      ORDER BY name ASC
+    `;
+
+    const employees = data.rows;
+    return employees;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch all employees.');
+  }
+}
+
+export async function fetchFilteredEmployees(query: string, currentPage: number, userEmail: string) {
+  noStore();
+
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  
+  try {
+    const data = await sql<EmployeesTableType>`
+		SELECT
+		  employees.id,
+		  employees.name,
+		  employees.email,
+      employees.rfc, 
+      employees.direccion,  
+      employees.telefono,  
+      employees.tipo_empleado,
+      employees.fecha_creado,
+		  COUNT(invoices.id) AS total_invoices,
+      SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
+      SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
+		FROM employees
+		LEFT JOIN invoices ON employees.id = invoices.employee_id
+		WHERE
+		  (employees.name ILIKE ${`%${query}%`} OR
+      employees.tipo_empleado ILIKE ${`%${query}%`})
+		GROUP BY employees.id, employees.name, employees.tipo_empleado, employees
+		ORDER BY employees.fecha_creado DESC
+    LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+	  `;
+
+    const employees = data.rows.map((employee) => ({
+      ...employee,
+    }));
+
+    return employees;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch employee table.');
+  }
+}
+
+export async function fetchEmployeesPages(query: string, userEmail: string) {
+  noStore();
+  
+  try {
+    const count = await sql`SELECT COUNT(*)
+    FROM employees
+    WHERE
+      
+      (employees.name ILIKE ${`%${query}%`} OR
+      employees.email ILIKE ${`%${query}%`})
+  `;
+
+    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of employees.');
+  }
+}
+
+export async function fetchEmployeeById(id: string, userEmail: string) {
+  noStore();
+  
+  try {
+    const customer = await sql<EmployeeForm>`
+      SELECT
+        id, name, email, rfc, direccion, telefono, tipo_empleado, fecha_creado
+      FROM employees
+      WHERE
+        id = ${id};
+    `;
+
+    return customer.rows[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    // throw new Error('Failed to fetch customer.');
+
+    return false // we can't return an error, because it can break the not-found functionality at app\dashboard\invoices\[id]\edit\not-found.tsx
+  }
+}
+
 
 export async function getUser(userEmail: string) {
   noStore();

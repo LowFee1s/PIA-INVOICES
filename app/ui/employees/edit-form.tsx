@@ -8,23 +8,23 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
-import { updateCustomer } from '@/app/lib/actions';
+import { updateEmployee } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
-import { Customer } from '@/app/lib/definitions';
+import { Employee } from '@/app/lib/definitions';
 import { themeType } from '@/app/lib/theme';
 
 export default function EditInvoiceForm({
-  customer,
+  employee,
   userEmail,
   theme
 }: {
-  customer: Customer;
+  employee: Employee;
   userEmail: string;
   theme: themeType
 }) {
-  const updateCustomerWithId = updateCustomer.bind(null, customer.id);
+  const updateEmployeeWithId = updateEmployee.bind(null, employee.id);
   const initialState = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(updateCustomerWithId, initialState);
+  const [state, dispatch] = useFormState(updateEmployeeWithId, initialState);
 
   return (
     <form action={dispatch}>
@@ -32,7 +32,7 @@ export default function EditInvoiceForm({
 
       <div className={`rounded-md ${theme.container} p-4 md:p-6`}>
         <div className="mb-4">
-          <label htmlFor="customer" className={`mb-2 block text-sm font-medium
+          <label htmlFor="employee" className={`mb-2 block text-sm font-medium
             ${theme.text}
           `}>
             Name: 
@@ -42,8 +42,8 @@ export default function EditInvoiceForm({
               id="name"
               name="name"
               type="text"
-              defaultValue={customer.name}
-              placeholder="Type the customer name"
+              defaultValue={employee.name}
+              placeholder="Type the employee name"
               className={`peer block w-full rounded-md border 
                 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500
                 ${theme.border} ${theme.bg} ${theme.text}
@@ -65,7 +65,7 @@ export default function EditInvoiceForm({
         </div>
 
         <div className="mb-4">
-          <label htmlFor="customer" className={`mb-2 block text-sm font-medium
+          <label htmlFor="employee" className={`mb-2 block text-sm font-medium
             ${theme.text}
           `}>
             RFC: 
@@ -75,8 +75,8 @@ export default function EditInvoiceForm({
               id="rfc"
               name="rfc"
               type="text"
-              defaultValue={customer.rfc}
-              placeholder="Type the customer rfc"
+              defaultValue={employee.rfc}
+              placeholder="Type the employee rfc"
               className={`peer block w-full rounded-md border 
                 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500
                 ${theme.border} ${theme.bg} ${theme.text}
@@ -98,7 +98,7 @@ export default function EditInvoiceForm({
         </div>
 
         <div className="mb-4">
-          <label htmlFor="customer" className={`mb-2 block text-sm font-medium
+          <label htmlFor="employee" className={`mb-2 block text-sm font-medium
             ${theme.text}
           `}>
             Telefono: 
@@ -108,8 +108,8 @@ export default function EditInvoiceForm({
               id="telefono"
               name="telefono"
               type="text"
-              defaultValue={customer.telefono}
-              placeholder="Type the customer telefono"
+              defaultValue={employee.telefono}
+              placeholder="Type the employee telefono"
               className={`peer block w-full rounded-md border 
                 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500
                 ${theme.border} ${theme.bg} ${theme.text}
@@ -131,7 +131,7 @@ export default function EditInvoiceForm({
         </div>
 
         <div className="mb-4">
-          <label htmlFor="customer" className={`mb-2 block text-sm font-medium
+          <label htmlFor="employee" className={`mb-2 block text-sm font-medium
             ${theme.text}
           `}>
             Direccion: 
@@ -141,8 +141,8 @@ export default function EditInvoiceForm({
               id="direccion"
               name="direccion"
               type="text"
-              defaultValue={customer.direccion}
-              placeholder="Type the customer direccion"
+              defaultValue={employee.direccion}
+              placeholder="Type the employee direccion"
               className={`peer block w-full rounded-md border 
                 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500
                 ${theme.border} ${theme.bg} ${theme.text}
@@ -176,8 +176,8 @@ export default function EditInvoiceForm({
                 id="email"
                 name="email"
                 type="mail"
-                defaultValue={customer.email}
-                placeholder="Enter the customer email"
+                defaultValue={employee.email}
+                placeholder="Enter the employee email"
                 className={`peer block w-full rounded-md border 
                   py-2 pl-10 text-sm outline-2 placeholder:text-gray-500
                   ${theme.border} ${theme.bg} ${theme.text}
@@ -204,7 +204,7 @@ export default function EditInvoiceForm({
         {/* Invoice Status */}
         <fieldset>
           <legend className={`mb-2 block text-sm font-medium ${theme.text}`}>
-            Selecciona el tipo de cliente
+            Selecciona el tipo de empleado
           </legend>
           <div className={`rounded-md border px-[14px] py-3
             ${theme.bg} ${theme.border}
@@ -213,14 +213,14 @@ export default function EditInvoiceForm({
               <div className="flex items-center">
                 <input
                   id="normal"
-                  name="tipo_cliente"
+                  name="tipo_empleado"
                   type="radio"
                   value="Normal"
-                  defaultChecked={customer.tipo_cliente === 'Normal'}
+                  defaultChecked={employee.tipo_empleado === 'Auxiliar'}
                   className={`h-4 w-4 cursor-pointer 
                     text-gray-600 focus:ring-2 ${theme.container} ${theme.border}
                   `}
-                  aria-describedby="tipo_cliente-error"
+                  aria-describedby="tipo_empleado-error"
                 />
                 <label
                   htmlFor="normal"
@@ -235,14 +235,14 @@ export default function EditInvoiceForm({
               <div className="flex items-center">
                 <input
                   id="asociado"
-                  name="tipo_cliente"
+                  name="tipo_empleado"
                   type="radio"
                   value="Asociado"
-                  defaultChecked={customer.tipo_cliente === "Asociado"}
+                  defaultChecked={employee.tipo_empleado === "Auxiliar"}
                   className={`h-4 w-4 cursor-pointer 
                     text-gray-600 focus:ring-2 ${theme.container} ${theme.border}
                   `}
-                  aria-describedby="tipo_cliente-error"
+                  aria-describedby="tipo_empleado-error"
                 />
                 <label
                   htmlFor="asociado"
@@ -253,9 +253,9 @@ export default function EditInvoiceForm({
               </div>
             </div>
           </div>
-          <div id="tipo_cliente-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.tipo_cliente &&
-              state.errors.tipo_cliente.map((error: string) => (
+          <div id="tipo_empleado-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.tipo_empleado &&
+              state.errors.tipo_empleado.map((error: string) => (
                 <p className="mt-2 text-sm text-red-500" key={error}>
                   {error}
                 </p>
@@ -272,7 +272,7 @@ export default function EditInvoiceForm({
       </div>
       <div className="mt-6 flex justify-end gap-4">
         <Link
-          href="/dashboard/customers"
+          href="/dashboard/employees"
           className={`
             flex h-10 items-center rounded-lg px-4 text-sm font-medium 
             transition-colors
@@ -282,7 +282,7 @@ export default function EditInvoiceForm({
         >
           Cancel
         </Link>
-        <Button type="submit">Update Customer</Button>
+        <Button type="submit">Update Employee</Button>
       </div>
     </form>
   );

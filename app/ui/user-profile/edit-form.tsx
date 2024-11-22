@@ -40,7 +40,7 @@ export default function Form({
       <input type="hidden" name="userEmail" value={user.email} />
 
       <div className={`rounded-md ${theme.container} p-4 md:p-6`}>
-        <div className="mb-4">
+        {/* <div className="mb-4">
           { user.password === null ? (
               <p className={`
                 mb-2 block text-sm font-light text-red-500
@@ -63,7 +63,7 @@ export default function Form({
                 You can also change your password whenever you want on this page.
               </p>
           )}
-        </div>
+        </div> */}
 
         <div className="mb-4">
           <label htmlFor="name" className={`mb-2 block text-sm font-medium

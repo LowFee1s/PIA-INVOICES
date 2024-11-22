@@ -1,11 +1,14 @@
+"use client"
+
 import AcmeLogo from '@/app/ui/acme-logo';
-import { Metadata } from 'next';
 import { lusitana } from '@/app/ui/fonts';
 import { systemDefault } from '@/app/lib/theme';
+import { Button } from '@/app/ui/button';
+import { useFormStatus } from 'react-dom';
+import { useRouter } from 'next/navigation';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
-export const metadata: Metadata = {
-  title: 'Forgot password',
-};
+
  
 export default function LoginPage({params}: {params: {email: string}}) {
   let email = params.email.replace('%40','@');
@@ -25,7 +28,23 @@ export default function LoginPage({params}: {params: {email: string}}) {
             to reset your password was sent to {email}
 					</h1>
         </div>
+        <ButtonBack />
       </div>
     </main>
+  );
+
+}
+
+function ButtonBack() {
+  const { pending } = useFormStatus();
+
+  const { replace } = useRouter();
+
+  return (
+    <Button className='mt-4 w-full' aria-disabled={pending} onClick={() => {
+      replace('/login');
+    }}>
+      Go back to the Login page <ArrowLeftIcon className="ml-auto h-5 w-5 text-gray-50" />
+    </Button>
   );
 }

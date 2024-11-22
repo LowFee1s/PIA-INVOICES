@@ -6,7 +6,7 @@ import { getUser } from '@/app/lib/data';
 import { darkTheme, lightTheme, systemDefault, themeType } from '@/app/lib/theme';
 
 export const metadata: Metadata = {
-  title: 'Not-Found Customer',
+  title: 'Not-Found Employee',
 };
  
 export default async function NotFound() {
@@ -31,9 +31,9 @@ export default async function NotFound() {
     <main className="flex h-full flex-col items-center justify-center gap-2">
       <FaceFrownIcon className={`w-10 ${theme.text}`} />
       <h2 className={`text-xl font-semibold ${theme.title}`}>404 Not Found</h2>
-      <p className={`${theme.text}`}>Could not find the requested customer.</p>
+      <p className={`${theme.text}`}>Could not find the requested employee.</p>
       <Link
-        href="/dashboard/customers"
+        href="/dashboard/employees"
         className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-400"
       >
         Go Back

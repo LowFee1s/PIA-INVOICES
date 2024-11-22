@@ -9,6 +9,7 @@ import { fetchInvoicesPages, getUser } from '@/app/lib/data';
 import { Metadata } from 'next'; 
 import { auth } from '@/auth';
 import { darkTheme, defaultTheme, lightTheme, systemDefault, themeType } from '@/app/lib/theme';
+import InvoicesServerTable from '@/app/ui/invoices/servertable';
 
 export const metadata: Metadata = {
   title: 'Invoices',
@@ -55,7 +56,7 @@ export default async function Page({
         <CreateInvoice />
       </div>
       <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton theme={theme || defaultTheme} />}>
-        <Table query={query} currentPage={currentPage} theme={theme || defaultTheme} />
+        <InvoicesServerTable query={query} currentPage={currentPage} theme={theme || defaultTheme} />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
         <Pagination totalPages={totalPages} theme={theme || defaultTheme} />

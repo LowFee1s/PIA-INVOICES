@@ -20,7 +20,15 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[-_!@#$%^&*]).{8,}$/;
 
 // A Zod schema for the name field
 const nameSchema = z.string().min(3, "Name must have at least 3 characters");
-
+const rfcSchema = z.string().min(8, "RFC must have at least 8 characters");
+const telefonoSchema = z.string().min(8, "Telefono must have at least 8 characters");
+const direccionSchema = z.string().min(10, "Direccion must have at least 10 characters");
+const tipoempleadoSchema =  z.enum(["Supervisor", "Jefe de area", "Asistente de Inventario", "Gerente de la planta principal", "Auxiliar"], {
+  invalid_type_error: 'Please select an type employee.',
+});
+const tipoclienteSchema =  z.enum(["Normal", "Asociado"], {
+  invalid_type_error: 'Please select an type customer.',
+});
 // A Zod schema for the email field
 const emailSchema = z.string().regex(emailRegex, "Invalid email format");
 
@@ -53,9 +61,24 @@ const InvoicesSchema = z.object({
   date: z.string(),
 });
 
+const EmployeeSchema = z.object({
+  name: nameSchema,
+  email: emailSchema,
+  rfc: rfcSchema,
+  telefono: telefonoSchema,
+  direccion: direccionSchema,
+  tipo_empleado: tipoempleadoSchema,
+  password: passwordSchema,
+  userEmail: emailSchema
+})
+
 const CustomerSchema = z.object({
   name: nameSchema,
   email: emailSchema,
+  rfc: rfcSchema,
+  telefono: telefonoSchema,
+  direccion: direccionSchema,
+  tipo_cliente: tipoclienteSchema,
   userEmail: emailSchema
 })
 
@@ -84,10 +107,29 @@ export type UserState = {
   message?: string | null;
 }
 
+export type EmployeeState = {
+  errors?: {
+    name?: string[];
+    email?: string[];
+    rfc?: string[];
+    telefono?: string[];
+    direccion?: string[];
+    password?: string[];
+    confirmPassword?: string[];
+    isoauth?: string[];
+    tipo_empleado?: string[];
+  }
+  message?: string | null;
+}
+
 export type CustomerState = {
   errors?: {
     name?: string[];
     email?: string[];
+    rfc?: string[];
+    telefono?: string[];
+    direccion?: string[];
+    tipo_cliente?: string[];
   }
   message?: string | null;
 }
@@ -176,12 +218,136 @@ export async function deleteInvoice(id: string) {
   }
 }
 
+
+
+export async function createEmployee(prevState: EmployeeState, formData: FormData) {
+  // Validate form using Zod
+  const validatedFields = EmployeeSchema.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+    rfc: formData.get('rfc'),
+    telefono: formData.get('telefono'),
+    direccion: formData.get('direccion'),
+    password: formData.get('password'),
+    tipo_empleado: formData.get('tipo_empleado'),
+    userEmail: formData.get('userEmail')
+  });
+ 
+  // If form validation fails, return errors early. Otherwise, continue.
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Employee.',
+    };
+  }
+ 
+  // Prepare data for insertion into the database
+  const { name, email, rfc, telefono, direccion, tipo_empleado, password, userEmail } = validatedFields.data;
+
+  const confirmPassword = formData.get('confirm-password');
+  if (password != confirmPassword) {
+    return {
+      message: 'Passwords are different.'
+    };
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const account = await sql`SELECT COUNT (*) AS count FROM employees WHERE email=${email}`;
+
+  if (Number(account.rows[0]?.count) > 0) {
+    return {
+      message: `This email address is already in use, please use another one!`
+    }
+  }
+
+  const date = new Date();
+  const formattedDate = date.toLocaleString('es-ES', {
+    weekday: 'long',    // Día de la semana
+    day: '2-digit',     // Día del mes con dos dígitos
+    month: 'long',      // Mes completo
+    year: 'numeric',    // Año en formato numérico
+    hour: '2-digit',    // Hora con dos dígitos
+    minute: '2-digit',  // Minutos con dos dígitos
+    second: '2-digit',  // Segundos con dos dígitos
+    hour12: false       // Formato 24 horas
+  });
+
+  // Insert data into the database
+  try {
+    await sql`
+      INSERT INTO employees (name, email, rfc, direccion, telefono, tipo_empleado, password, isoauth, theme, fecha_creado)
+      VALUES (${name}, ${email}, ${rfc}, ${direccion}, ${telefono}, ${tipo_empleado}, ${hashedPassword}, ${false}, ${'light'}, ${formattedDate})
+    `;
+  } catch (error) {
+    // If a database error occurs, return a more specific error.
+    return {
+      message: `Database Error: Failed to Create Employee. ${error} `,
+    };
+  }
+ 
+  redirect('/dashboard/employees');
+}
+
+export async function updateEmployee(
+  id: string,
+  prevState: EmployeeState,
+  formData: FormData
+) {
+  const validatedFields = EmployeeSchema.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+    rfc: formData.get('rfc'),
+    telefono: formData.get('telefono'),
+    direccion: formData.get('direccion'),
+    tipo_empleado: formData.get('tipo_empleado'),
+    userEmail: formData.get('userEmail')
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Customer.',
+    };
+  }
+ 
+  const { name, email, rfc, telefono, direccion, tipo_empleado, userEmail } = validatedFields.data;
+ 
+  try {
+    await sql`
+      UPDATE employees
+      SET name = ${name}, email = ${email}, rfc = ${rfc}, telefono = ${telefono}, direccion = ${direccion}, tipo_empleado = ${tipo_empleado}
+      WHERE
+        employees.email = ${email}
+      AND
+        id = ${id}
+    `;
+  } catch (error) {
+    return { message: `Database Error: Failed to Update Employee. ` };
+  }
+ 
+  redirect('/dashboard/employees');
+}
+
+export async function deleteEmployee(id: string) {
+  try {
+    await sql`DELETE FROM employees WHERE id = ${id}`;
+    return { message: 'Deleted Employee.' };
+  } catch (error) {
+    return { message: 'Database Error: Failed to Delete Employee.' };
+  }
+}
+
+
 export async function createCustomer(prevState: CustomerState, formData: FormData) {
   // Validate form using Zod
   const validatedFields = CustomerSchema.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
-    userEmail: formData.get('email')
+    rfc: formData.get('rfc'),
+    telefono: formData.get('telefono'),
+    direccion: formData.get('direccion'),
+    tipo_cliente: formData.get('tipo_cliente'),
+    userEmail: formData.get('userEmail')
   });
  
   // If form validation fails, return errors early. Otherwise, continue.
@@ -193,18 +359,30 @@ export async function createCustomer(prevState: CustomerState, formData: FormDat
   }
  
   // Prepare data for insertion into the database
-  const { name, email, userEmail} = validatedFields.data;
- 
+  const { name, email, rfc, telefono, direccion, tipo_cliente, userEmail } = validatedFields.data;
+  
+  const date = new Date();
+  const formattedDate = date.toLocaleString('es-ES', {
+    weekday: 'long',    // Día de la semana
+    day: '2-digit',     // Día del mes con dos dígitos
+    month: 'long',      // Mes completo
+    year: 'numeric',    // Año en formato numérico
+    hour: '2-digit',    // Hora con dos dígitos
+    minute: '2-digit',  // Minutos con dos dígitos
+    second: '2-digit',  // Segundos con dos dígitos
+    hour12: false       // Formato 24 horas
+  });
+
   // Insert data into the database
   try {
     await sql`
-      INSERT INTO customers (name, email, user_email)
-      VALUES (${name}, ${email}, ${userEmail})
+      INSERT INTO customers (name, email, rfc, direccion, telefono, tipo_cliente, fecha_creado)
+      VALUES (${name}, ${email}, ${rfc}, ${direccion}, ${telefono}, ${tipo_cliente}, ${formattedDate})
     `;
   } catch (error) {
     // If a database error occurs, return a more specific error.
     return {
-      message: 'Database Error: Failed to Create Customer.',
+      message: `Database Error: Failed to Create Customer. `,
     };
   }
  
@@ -219,6 +397,10 @@ export async function updateCustomer(
   const validatedFields = CustomerSchema.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
+    rfc: formData.get('rfc'),
+    telefono: formData.get('telefono'),
+    direccion: formData.get('direccion'),
+    tipo_cliente: formData.get('tipo_cliente'),
     userEmail: formData.get('userEmail')
   });
  
@@ -229,19 +411,19 @@ export async function updateCustomer(
     };
   }
  
-  const { name, email, userEmail } = validatedFields.data;
+  const { name, email, rfc, telefono, direccion, tipo_cliente, userEmail } = validatedFields.data;
  
   try {
     await sql`
       UPDATE customers
-      SET name = ${name}, email = ${email}
+      SET name = ${name}, email = ${email}, rfc = ${rfc}, telefono = ${telefono}, direccion = ${direccion}, tipo_cliente = ${tipo_cliente}
       WHERE
-        customers.user_email = ${userEmail}
+        customers.email = ${email}
       AND
         id = ${id}
     `;
   } catch (error) {
-    return { message: 'Database Error: Failed to Update Customer.' };
+    return { message: `Database Error: Failed to Update Customer. ` };
   }
  
   redirect('/dashboard/customers');
@@ -255,6 +437,7 @@ export async function deleteCustomer(id: string) {
     return { message: 'Database Error: Failed to Delete Customer.' };
   }
 }
+
 
 export async function createUserWithCredentials(prevState: UserState, formData: FormData) {
   // Validate form using Zod

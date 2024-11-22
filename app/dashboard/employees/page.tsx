@@ -1,16 +1,16 @@
-import Table from '@/app/ui/customers/table';
+import Table from '@/app/ui/employees/table';
 import { lusitana } from '@/app/ui/fonts';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
 import { Metadata } from 'next'; 
 import { systemDefault, darkTheme, lightTheme, themeType } from '@/app/lib/theme';
 import Pagination from '@/app/ui/customers/pagination';
-import { fetchCustomersPages, getUser } from '@/app/lib/data';
+import { fetchEmployeesPages, getUser } from '@/app/lib/data';
 import { auth } from '@/auth';
-import CustomersServerTable from '@/app/ui/customers/servertable';
+import EmployeesServerTable from '@/app/ui/employees/servertable';
 
 export const metadata: Metadata = {
-  title: 'Customers',
+  title: 'Employees',
 };
  
 export default async function Page({
@@ -26,7 +26,7 @@ export default async function Page({
 
   const session = await auth();
   const userEmail = session?.user?.email!;
-  const totalPages = await fetchCustomersPages(query, userEmail);
+  const totalPages = await fetchEmployeesPages(query, userEmail);
 
   const user = await getUser(userEmail);
   let theme: themeType;
@@ -46,10 +46,10 @@ export default async function Page({
   return (
     <div className="w-full">
       <div className="flex w-full items-center justify-between">
-        <h1 className={`${lusitana.className} text-2xl ${theme.title}`}>Customers</h1>
+        <h1 className={`${lusitana.className} text-2xl ${theme.title}`}>Employees</h1>
       </div>
       <Suspense key={query} fallback={<InvoicesTableSkeleton theme={theme} />}>
-        <CustomersServerTable query={query} currentPage={currentPage} theme={theme} />
+        <EmployeesServerTable query={query} currentPage={currentPage} theme={theme} />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
         <Pagination totalPages={totalPages} theme={theme} />

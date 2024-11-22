@@ -14,23 +14,23 @@ export default function InvoiceStatus({
     <span
       className={clsx(
         `inline-flex items-center rounded-full px-2 py-1 text-xs
-          ${status === 'pending' && `${theme.container}`}
+          ${status === 'Pendiente' && `${theme.container}`}
         `,
         {
-          'text-gray-500': status === 'pending',
-          'bg-green-500 text-white': status === 'paid',
+          'text-gray-500': status === 'Pendiente',
+          'bg-green-500 text-white': status === 'Pagado',
         },
       )}
     >
-      {status === 'pending' ? (
+      {status === 'Pendiente' ? (
         <>
-          Pending
+          Pendiente
           <ClockIcon className="ml-1 w-4 text-gray-500" />
         </>
       ) : null}
-      {status === 'paid' ? (
+      {status === 'Pagado' ? (
         <>
-          Paid
+          Pagado
           <CheckIcon className="ml-1 w-4 text-white" />
         </>
       ) : null}

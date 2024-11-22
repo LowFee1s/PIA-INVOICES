@@ -49,9 +49,9 @@ export default function LoginForm() {
     if (params.passwordUpdated) {
       toast.success("Password updated successfully!!");
     }
-    if (!params.accountCreated && !params.passwordUpdated) {
-      toast.warning(<><b>Note</b>: accounts are now automatically <b>deleted</b> after <b>one week</b>.</>);
-    } 
+    // if (!params.accountCreated && !params.passwordUpdated) {
+    //   toast.warning(<><b>Note</b>: accounts are now automatically <b>deleted</b> after <b>one week</b>.</>);
+    // } 
   }, []);
 
   return (
