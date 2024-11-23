@@ -12,9 +12,11 @@ import { EmployeeDetailsModal } from './modal';
 
 export default function EmployeesTable({  
   employees,
+  user,
   theme  
 }: {  
   employees: Employee[];
+  user: string;
   theme: themeType;  
 }) {  
 
@@ -69,8 +71,8 @@ export default function EmployeesTable({
                         onOpen={() => openModal(employee)}
                         theme={theme}
                       />
-                      <UpdateEmployee id={employee.id} theme={theme} />
-                      <DeleteEmployee disabled={false} id={employee.id} theme={theme} />
+                      <UpdateEmployee disabled={employee.email == user ? true : false} id={employee.id} theme={theme} />
+                      <DeleteEmployee disabled={employee.email == user ? true : false} id={employee.id} theme={theme} />
                     </div>
                   </div>
                 ))}
@@ -145,8 +147,8 @@ export default function EmployeesTable({
                             onOpen={() => openModal(employee)}
                             theme={theme}
                           />
-                          <UpdateEmployee id={employee.id} theme={theme} />
-                          <DeleteEmployee disabled={false} id={employee.id} theme={theme} />
+                          <UpdateEmployee disabled={employee.email == user ? true : false} id={employee.id} theme={theme} />
+                          <DeleteEmployee disabled={employee.email == user ? true : false} id={employee.id} theme={theme} />
                         </div>
                       </td>
                     </tr>

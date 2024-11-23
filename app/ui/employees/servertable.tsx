@@ -16,5 +16,5 @@ export default async function EmployeesServerTable({
   const userEmail = session?.user?.email || "";
   const employees = await fetchFilteredEmployees(query, currentPage, userEmail);
 
-  return <EmployeesTable employees={employees} theme={theme} />;
+  return <EmployeesTable employees={employees} user={userEmail} theme={theme} />;
 }

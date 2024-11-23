@@ -109,19 +109,28 @@ export function CreateEmployee() {
 
 export function UpdateEmployee({ 
   id,
+  disabled,
   theme 
 }: 
 { 
   id: string;
+  disabled: boolean;
   theme: themeType
 }) {
+
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    if (disabled) {
+      event.preventDefault();
+    }
+  };
+  
   return (
     <Link
       href={`/dashboard/employees/${id}/edit`}
-      className={`rounded-md border p-2
-        ${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText}
-        ${theme.hoverBorder}
-      `}
+      onClick={handleClick}
+      aria-disabled={disabled} className={`rounded-md border p-2 
+        ${disabled ? 'bg-gray-400 text-gray-100 cursor-not-allowed' : 
+        `${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText} ${theme.hoverBorder}`}`}
     >
       <PencilIcon className="w-5" />
     </Link>
@@ -188,19 +197,28 @@ export function CreateCustomer() {
 
 export function UpdateCustomer({ 
   id,
+  disabled,   
   theme 
 }: 
 { 
   id: string;
+  disabled: boolean;   
   theme: themeType
 }) {
+
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    if (disabled) {
+      event.preventDefault();
+    }
+  };
+
   return (
     <Link
       href={`/dashboard/customers/${id}/edit`}
-      className={`rounded-md border p-2
-        ${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText}
-        ${theme.hoverBorder}
-      `}
+      onClick={handleClick}
+      aria-disabled={disabled} className={`rounded-md border p-2 
+      ${disabled ? 'bg-gray-400 text-gray-100 cursor-not-allowed' : 
+      `${theme.border} ${theme.text} ${theme.hoverBg} ${theme.hoverText} ${theme.hoverBorder}`}`}
     >
       <PencilIcon className="w-5" />
     </Link>

@@ -79,7 +79,7 @@ export default function CustomersTable({
                         onOpen={() => openModal(customer)}
                         theme={theme}
                       />
-                      <UpdateCustomer id={customer.id} theme={theme} />
+                      <UpdateCustomer disabled={Number(customer.total_pending) > 0.00 ? true : false} id={customer.id} theme={theme} />
                       <DeleteCustomer disabled={Number(customer.total_pending) > 0 ? true : false} id={customer.id} theme={theme} />
                     </div>
                   </div>
@@ -155,7 +155,7 @@ export default function CustomersTable({
                             onOpen={() => openModal(customer)}
                             theme={theme}
                           />
-                          <UpdateCustomer id={customer.id} theme={theme} />
+                          <UpdateCustomer disabled={Number(customer.total_pending) > 0.00 ? true : false} id={customer.id} theme={theme} />
                           <DeleteCustomer disabled={Number(customer.total_pending) > 0.00 ? true : false} id={customer.id} theme={theme} />
                         </div>
                       </td>
