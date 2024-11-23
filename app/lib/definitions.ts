@@ -40,6 +40,16 @@ export type Customer = {
   tipo_cliente: "Normal" | "Asociado";
 };
 
+export type CustomerEdit = {
+  id: string;
+  name: string;
+  email: string;
+  rfc: string;
+  direccion: string;
+  telefono: string;
+  tipo_cliente: "Normal" | "Asociado";
+};
+
 export type Employee = {
   id: string;
   name: string;
@@ -55,6 +65,15 @@ export type Employee = {
   tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
 };
 
+export type EmployeeEdit = {
+  id: string;
+  name: string;
+  email: string;
+  rfc: string;
+  direccion: string;
+  telefono: string;
+  tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
+}
 
 
 export type Invoice = {
