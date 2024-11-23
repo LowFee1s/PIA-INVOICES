@@ -19,6 +19,8 @@ export default async function Loading() {
     case 'light':
       theme = lightTheme;
       break;
+    default: 
+      theme = defaultTheme;
   }
 
   return <DashboardSkeleton theme={theme || defaultTheme } />;

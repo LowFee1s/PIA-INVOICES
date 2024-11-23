@@ -23,7 +23,11 @@ export default async function RevenueChart({theme}:{theme:themeType}) {
   const { yAxisLabels, topLabel } = generateYAxis(revenue);
 
   if (!revenue || revenue.length === 0) {
-    return <p className="mt-4 text-gray-400">No data available.</p>;
+    return <div>
+      <p className="mt-4 text-xl text-center text-gray-400">Grafico de ganancias.</p>
+      <p className="mt-4 text-base text-center text-gray-400">No data available.</p>
+    </div>
+
   }
 
   return (

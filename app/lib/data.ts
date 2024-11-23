@@ -220,6 +220,9 @@ export async function fetchFilteredInvoices(
         invoices.fecha_creado,
         invoices.fecha_para_pagar,
         invoices.status,
+        invoices.modo_pago,
+        invoices.usocliente_cdfi,
+        regimenfiscal_cdfi,
         customers.name,
         customers.email
       FROM invoices
@@ -321,8 +324,6 @@ export async function fetchInvoiceById(id: string, userEmail: string) {
         invoices 
       JOIN 
         customers ON invoices.customer_id = customers.id
-      WHERE 
-        customers.email = ${userEmail} 
       AND
         invoices.id = ${id};  
     `;

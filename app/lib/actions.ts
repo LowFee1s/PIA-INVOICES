@@ -85,6 +85,8 @@ const EmployeeSchema = z.object({
   userEmail: emailSchema
 })
 
+const UpdateEmployee = EmployeeSchema.omit({ password: true, rfc: true });
+
 const CustomerSchema = z.object({
   name: nameSchema,
   email: emailSchema,
@@ -97,7 +99,7 @@ const CustomerSchema = z.object({
 
 // Use Zod to update the expected types
 const CreateInvoice = InvoicesSchema.omit({ id: true, date: true });
-const UpdateInvoice = InvoicesSchema.omit({ id: true, products: true, date: true });
+const UpdateInvoice = InvoicesSchema.omit({ id: true, customerId: true, products: true, amount: true, employee: true, date: true });
 
 // This is temporary until @types/react-dom is updated
 export type InvoiceState = {
@@ -417,6 +419,7 @@ export async function createInvoice(prevState: InvoiceState, formData: FormData)
 
   // Redirigir después de insertar
   redirect('/dashboard/invoices');
+
 }
 
 
@@ -428,12 +431,8 @@ export async function updateInvoice(
   formData: FormData,
 ) {
 
-
   // Obtener los valores del formulario
-  const customerId1 = formData.get('customerId');
-  const amount1 = parseFloat(formData.get('amount') as string);
   const status1 = formData.get('status');
-  const employee1 = formData.get('employee');
   const fechapagar1 = formData.get('fecha_maxima');
   const regimen_fiscal1 = formData.get('regimen_fiscal');
   const metodo_pago1 = formData.get('metodo_pago');
@@ -446,12 +445,9 @@ export async function updateInvoice(
 
   // Comprobación de los valores obtenidos
   console.log('Form Data:', {
-    customerId1,
-    amount1,
-    status1,
-    employee1,
-    fechapagar1,
     regimen_fiscal12,
+    fechapagar1,
+    status1,
     metodo_pago12,
     uso_factura12,
   });
@@ -459,29 +455,23 @@ export async function updateInvoice(
   // Definir los mensajes de error antes de usarlos
   const errorMessages = {
     validation: {
-      customerId: 'Please select a valid customer.',
-      amount: 'Please select any products.',
       status: 'Please select a valid status.',
-      products: 'Products list is invalid or empty.',
       regimen_fiscal: 'Invalid fiscal regimen selected.',
       metodo_pago: 'Invalid payment method selected.',
       uso_factura: 'Invalid invoice usage selected.',
     },
     database: {
-      general: 'Something went wrong while saving the invoice. Please try again later.',
-      productInsert: 'Failed to save products. Please check the product details.',
-      invoiceInsert: 'Failed to save the invoice. Please try again.',
+      general: 'Something went wrong while update the invoice. Please try again later.',
+      productInsert: 'Failed to update products. Please check the product details.',
+      invoiceInsert: 'Failed to update the invoice. Please try again.',
     },
   };
 
   // Validación de los campos con Zod
-  const validatedFields = InvoicesSchema.safeParse({
-    customerId: customerId1 ?? '', // Asignar valor predeterminado si es null/undefined
-    amount: isNaN(amount1) ? 0 : amount1, // Validar si amount es NaN
-    status: status1 ?? '', // Asignar valor predeterminado si es null/undefined
-    employee: employee1 ?? '', // Asignar valor predeterminado si es null/undefined
-    fechapagar: fechapagar1 ?? '', // Asignar valor predeterminado si es null/undefined
+  const validatedFields = UpdateInvoice.safeParse({
     regimen_fiscal12, // Usar el valor con el predeterminado
+    fechapagar: fechapagar1 ?? '', // Asignar valor predeterminado si es null/undefined
+    status: status1 ?? '', // Asignar valor predeterminado si es null/undefined
     metodo_pago12, // Usar el valor con el predeterminado
     uso_factura12, // Usar el valor con el predeterminado
   });
@@ -504,53 +494,49 @@ export async function updateInvoice(
   }
 
   // Usar los datos validados
-  const { customerId, amount, status, products, employee, fechapagar, uso_factura, metodo_pago, regimen_fiscal } = validatedFields.data;
+  const { uso_factura, fechapagar, status, metodo_pago, regimen_fiscal } = validatedFields.data;
   console.log('Validated Fields:', {
-    customerId,
-    amount,
-    status,
-    products,
-    employee,
-    fechapagar,
     uso_factura,
+    fechapagar,
+    status,
     metodo_pago,
     regimen_fiscal,
   });
 
-  const amountInCents = amount * 100; // Convertir a centavos
   const date = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
 
   let result;
   try {
     // Iniciar una transacción en la base de datos para insertar la factura y los productos
     if (status === "Pendiente" && fechapagar) {
-      console.log("Inserting Pending Invoice:", { customerId, amountInCents, status, date, employee, fechapagar });
+      console.log("Updating Pending Invoice:", { fechapagar, status });
       result = await sql`
-      INSERT INTO invoices (customer_id, amount, status, fecha_creado, employee_id, fecha_para_pagar)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date}, ${employee}, ${fechapagar})
-      RETURNING id`;
+      UPDATE invoices SET fecha_para_pagar = ${fechapagar}, status = ${status}   
+      WHERE id = ${id}
+      `;
     }
 
     if (status === "Pagado") {
-      console.log("Inserting Paid Invoice:", { customerId, amountInCents, status, date, employee, uso_factura, metodo_pago, regimen_fiscal });
+      console.log("Updating Paid Invoice:", { uso_factura, status, metodo_pago, regimen_fiscal });
       result = await sql`
-      INSERT INTO invoices (customer_id, amount, status, fecha_creado, employee_id, usocliente_cdfi, modo_pago, regimenfiscal_cdfi)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date}, ${employee}, ${uso_factura12}, ${metodo_pago12}, ${regimen_fiscal12})
-      RETURNING id`;
+      UPDATE invoices SET usocliente_cdfi = ${uso_factura12}, regimenfiscal_cdfi = ${regimen_fiscal12}, status = ${status}, modo_pago = ${metodo_pago12}         
+      WHERE id = ${id}
+      `;
     }
 
-    console.log('Invoice Inserted, ID:', invoiceId);
+    console.log('Invoice Update, ID:', result);
 
   } catch (error) {
     // Si ocurre un error con la base de datos
     console.error('Database Error: ', error);
     return {
-      message: 'Database Error: Failed to Create Invoice.',
+      message: 'Database Error: Failed to Update Invoice.',
     };
   }
 
   // Redirigir después de insertar
   redirect('/dashboard/invoices');
+
 }
 
 export async function deleteInvoice(id: string) {
@@ -637,32 +623,29 @@ export async function updateEmployee(
   prevState: EmployeeState,
   formData: FormData
 ) {
-  const validatedFields = EmployeeSchema.safeParse({
+  const validatedFields = UpdateEmployee.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
-    rfc: formData.get('rfc'),
     telefono: formData.get('telefono'),
     direccion: formData.get('direccion'),
     tipo_empleado: formData.get('tipo_empleado'),
-    userEmail: formData.get('userEmail')
+    userEmail: formData.get('userEmail'),
   });
  
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Update Customer.',
+      message: 'Missing Fields. Failed to Update Employee.',
     };
   }
  
-  const { name, email, rfc, telefono, direccion, tipo_empleado, userEmail } = validatedFields.data;
+  const { name, email, telefono, direccion, tipo_empleado, userEmail} = validatedFields.data;
  
   try {
     await sql`
       UPDATE employees
-      SET name = ${name}, email = ${email}, rfc = ${rfc}, telefono = ${telefono}, direccion = ${direccion}, tipo_empleado = ${tipo_empleado}
+      SET name = ${name}, email = ${email}, telefono = ${telefono}, direccion = ${direccion}, tipo_empleado = ${tipo_empleado}
       WHERE
-        employees.email = ${email}
-      AND
         id = ${id}
     `;
   } catch (error) {

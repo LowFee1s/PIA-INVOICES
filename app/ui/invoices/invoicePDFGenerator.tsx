@@ -110,7 +110,7 @@ export default function InvoicePDFGenerator({ invoice, disabled, theme }: { invo
     // Agregar "Uso de la factura" y "Razón Social" debajo de la barra
     doc.setFontSize(12).text(`Uso de la factura: ${invoice.usocliente_cdfi || 'N/A'}`, 10, yPosition);
     doc.setFontSize(12).text(`Razón Social: ${invoice.regimenfiscal_cdfi || 'N/A'}`, 10, yPosition + 10);
-  
+    doc.setFontSize(12).text(`Metodo de pago: ${invoice.modo_pago || 'N/A'}`, 10, yPosition + 20);
     // Guardar el PDF
     doc.save(`invoiceCDFI_${invoice.id}.pdf`);
   };

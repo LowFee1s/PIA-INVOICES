@@ -132,17 +132,17 @@ export default function LoginForm() {
         
       </form>
 
-      <CreateAccount />
+      {/* <CreateAccount /> */}
       <ForgotPassword />
 
-      <p className={`
+      {/* <p className={`
         ${systemDefault.text} pb-2 pt-[9px] text-center
       `}>
         or
       </p>
 
       <GitHubSignInButton />
-      <GoogleSignInButton />
+      <GoogleSignInButton /> */}
     </div>
   );
 }

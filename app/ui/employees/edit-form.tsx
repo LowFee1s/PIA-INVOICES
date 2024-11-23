@@ -1,10 +1,13 @@
 'use client';
 
 import {
+  ArchiveBoxIcon,
   AtSymbolIcon,
+  BuildingOffice2Icon,
   HomeModernIcon,
   UserCircleIcon,
-  UserIcon
+  UserIcon,
+  WrenchIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
@@ -31,7 +34,9 @@ export default function EditInvoiceForm({
       <input type="hidden" name="userEmail" value={userEmail} />
 
       <div className={`rounded-md ${theme.container} p-4 md:p-6`}>
-        <div className="mb-4">
+      <h1 className={`text-sm text-gray-500 ${theme.title}`}>Identificador de empleado: {employee.id}</h1>
+
+        <div className="my-4">
           <label htmlFor="employee" className={`mb-2 block text-sm font-medium
             ${theme.text}
           `}>
@@ -75,7 +80,9 @@ export default function EditInvoiceForm({
               id="rfc"
               name="rfc"
               type="text"
+              disabled
               defaultValue={employee.rfc}
+              readOnly
               placeholder="Type the employee rfc"
               className={`peer block w-full rounded-md border 
                 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500
@@ -201,6 +208,7 @@ export default function EditInvoiceForm({
         </div>
 
         
+             
         {/* Invoice Status */}
         <fieldset>
           <legend className={`mb-2 block text-sm font-medium ${theme.text}`}>
@@ -212,10 +220,92 @@ export default function EditInvoiceForm({
             <div className="flex gap-4">
               <div className="flex items-center">
                 <input
-                  id="normal"
+                  id="supervisor"
                   name="tipo_empleado"
                   type="radio"
-                  value="Normal"
+                  value="Supervisor"
+                  defaultChecked={employee.tipo_empleado === 'Supervisor'}
+                  className={`h-4 w-4 cursor-pointer 
+                    text-gray-600 focus:ring-2 ${theme.container} ${theme.border}
+                  `}
+                  aria-describedby="tipo_empleado-error"
+                />
+                <label
+                  htmlFor="supervisor"
+                  className={`ml-2 flex cursor-pointer items-center gap-1.5 rounded-full 
+                  px-3 py-1.5 text-xs font-medium text-gray-600
+                    ${theme.container} ${theme.border} ${theme.text}
+                  `}
+                >
+                  Supervisor <UserIcon className="h-4 w-4" />
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  id="jefe-de-area"
+                  name="tipo_empleado"
+                  type="radio"
+                  value="Jefe de area"
+                  defaultChecked={employee.tipo_empleado === 'Jefe de area'}
+                  className={`h-4 w-4 cursor-pointer 
+                    text-gray-600 focus:ring-2 ${theme.container} ${theme.border}
+                  `}
+                  aria-describedby="tipo_empleado-error"
+                />
+                <label
+                  htmlFor="jefe-de-area"
+                  className={`ml-2 flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 ${theme.container} ${theme.border} ${theme.text}`}
+                >
+                  Jefe de area <HomeModernIcon className="h-4 w-4" />
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  id="asistente-de-inventario"
+                  name="tipo_empleado"
+                  type="radio"
+                  value="Asistente de Inventario"
+                  defaultChecked={employee.tipo_empleado === 'Asistente de Inventario'}
+                  className={`h-4 w-4 cursor-pointer 
+                    text-gray-600 focus:ring-2 ${theme.container} ${theme.border}
+                  `}
+                  aria-describedby="tipo_empleado-error"
+                />
+                <label
+                  htmlFor="asistente-de-inventario"
+                  className={`ml-2 flex cursor-pointer items-center gap-1.5 rounded-full 
+                  px-3 py-1.5 text-xs font-medium text-gray-600
+                    ${theme.container} ${theme.border} ${theme.text}
+                  `}
+                >
+                  Asistente de Inventario <ArchiveBoxIcon className="h-4 w-4" />
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  id="gerente-de-la-planta-principal"
+                  name="tipo_empleado"
+                  type="radio"
+                  value="Gerente de la planta principal"
+                  defaultChecked={employee.tipo_empleado === 'Gerente de la planta principal'}
+                  className={`h-4 w-4 cursor-pointer 
+                    text-gray-600 focus:ring-2 ${theme.container} ${theme.border}
+                  `}
+                  aria-describedby="tipo_empleado-error"
+                />
+                <label
+                  htmlFor="gerente-de-la-planta-principal"
+                  className={`ml-2 flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 ${theme.container} ${theme.border} ${theme.text}`}
+                >
+                  Gerente de la planta principal <BuildingOffice2Icon className="h-4 w-4" />
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  id="auxiliar"
+                  name="tipo_empleado"
+                  type="radio"
+                  value="Auxiliar"
                   defaultChecked={employee.tipo_empleado === 'Auxiliar'}
                   className={`h-4 w-4 cursor-pointer 
                     text-gray-600 focus:ring-2 ${theme.container} ${theme.border}
@@ -223,34 +313,16 @@ export default function EditInvoiceForm({
                   aria-describedby="tipo_empleado-error"
                 />
                 <label
-                  htmlFor="normal"
+                  htmlFor="auxiliar"
                   className={`ml-2 flex cursor-pointer items-center gap-1.5 rounded-full 
                   px-3 py-1.5 text-xs font-medium text-gray-600
                     ${theme.container} ${theme.border} ${theme.text}
                   `}
                 >
-                  Normal <UserIcon className="h-4 w-4" />
+                  Auxiliar <WrenchIcon className="h-4 w-4" />
                 </label>
               </div>
-              <div className="flex items-center">
-                <input
-                  id="asociado"
-                  name="tipo_empleado"
-                  type="radio"
-                  value="Asociado"
-                  defaultChecked={employee.tipo_empleado === "Auxiliar"}
-                  className={`h-4 w-4 cursor-pointer 
-                    text-gray-600 focus:ring-2 ${theme.container} ${theme.border}
-                  `}
-                  aria-describedby="tipo_empleado-error"
-                />
-                <label
-                  htmlFor="asociado"
-                  className={`ml-2 flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 ${theme.container} ${theme.border} ${theme.text}`}
-                >
-                  Asociado <HomeModernIcon className="h-4 w-4" />
-                </label>
-              </div>
+              
             </div>
           </div>
           <div id="tipo_empleado-error" aria-live="polite" aria-atomic="true">
@@ -262,6 +334,8 @@ export default function EditInvoiceForm({
               ))}
           </div>
         </fieldset>
+
+
 
 
         {state?.message && (

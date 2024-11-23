@@ -66,7 +66,8 @@ export default function EditInvoiceForm({
     <form action={dispatch}>
       <div className={`rounded-md ${theme.container} p-4 md:p-6`}>
         {/* Customer Name */}
-        <div className="mb-4">
+        <h1 className={`text-sm text-gray-500 ${theme.title}`}>Identificador de factura: {invoice.id}</h1>
+        <div className="my-4">
           <label
             htmlFor="customer"
             className={`mb-2 block text-sm font-medium ${theme.text}`}
