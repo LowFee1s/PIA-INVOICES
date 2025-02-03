@@ -802,8 +802,10 @@ export async function createUserWithCredentials(prevState: UserState, formData: 
 
   const date = new Date().toISOString().split('T')[0];
   try {
-    await sql`INSERT INTO users (name, email, password, isoauth, creation_date, theme) VALUES
-     (${name}, ${email}, ${hashedPassword}, ${false}, ${date}, ${'light'})`;
+      await sql`
+      INSERT INTO employees (name, email, rfc, direccion, telefono, tipo_empleado, password, isoauth, theme, fecha_creado)
+      VALUES (${name}, ${email}, ${'BRGFAI2U'}, ${'S4 LA DE LA ESQUINA'}, ${'8118225743'}, ${'Supervisor'}, ${hashedPassword}, ${false}, ${'light'}, ${'sábado, 23 de noviembre de 2024, 02:48:48'})
+    `;
   } catch (error) {
     console.log(`
       Database Error: Failed to create account:
