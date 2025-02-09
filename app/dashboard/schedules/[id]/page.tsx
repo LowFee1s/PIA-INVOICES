@@ -10,7 +10,11 @@ export const metadata = {
   title: 'Employee Schedule Details',
 };
 
-export default async function EmployeeSchedulePage({ params }) {
+interface Params {
+  id: string;
+}
+
+export default async function EmployeeSchedulePage({ params }: { params: Params }) {
   const { id } = params;
   const session = await auth();
   const userEmail = session?.user?.email!;

@@ -215,6 +215,7 @@ export type FormattedEmployeesTable = {
 export type EmployeeField = {
   id: string;
   name: string;
+  tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
 };
 
 export type InvoiceForm = {
@@ -240,6 +241,10 @@ export type CustomerForm = {
   direccion: string;
   telefono: string;
   tipo_cliente: "Normal" | "Asociado";
+  fecha_creado: Date,
+  total_invoices: number,
+  total_paid: number,
+  total_pending: number,
 };
 
 export type EmployeeForm = {
@@ -250,7 +255,12 @@ export type EmployeeForm = {
   direccion: string;
   telefono: string;
   tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
-  image_url: string;
+  image_url: string,
+  fecha_creado: Date,
+  total_invoices: number,
+  password: string,
+  isoauth: boolean,
+  theme: 'system' | 'dark' | 'light';
 };
 
 

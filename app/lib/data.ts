@@ -546,7 +546,7 @@ export async function fetchEmployeesAll() {
   }
 }
 
-export async function fetchEmployeeSchedules(employeeId, userEmail) {
+export async function fetchEmployeeSchedules(employeeId: string, userEmail: string) {
   const schedules = await sql.sql`
     SELECT * 
     FROM work_schedules
