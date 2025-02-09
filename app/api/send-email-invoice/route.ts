@@ -14,6 +14,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
 
+    // Verificar que pdfFile sea un archivo o Blob
+    if (!(pdfFile instanceof Blob)) {
+      return NextResponse.json({ error: "El archivo PDF es inválido" }, { status: 400 });
+    }
+
+    // Asegurarnos de que customerEmail sea un string
+    if (typeof customerEmail !== "string") {
+      return NextResponse.json({ error: "El correo del cliente no es válido" }, { status: 400 });
+    }
+
     // Crear la carpeta temporal si no existe
     const tmpDir = path.join(process.cwd(), "tmp");
     if (!fs.existsSync(tmpDir)) {
@@ -25,7 +35,7 @@ export async function POST(req: Request) {
     const pdfPath = path.join(tmpDir, `invoice_${invoiceId}.pdf`);
 
     // Escribir el archivo PDF en el sistema
-    fs.writeFileSync(pdfPath, pdfBuffer);
+    fs.writeFileSync(pdfPath, new Uint8Array(pdfBuffer));
 
     // Configurar el transporte de correo
     const transporter = nodemailer.createTransport({
@@ -39,7 +49,7 @@ export async function POST(req: Request) {
     // Configurar los detalles del correo
     const mailOptions = {
       from: process.env.GOOGLE_ACCOUNT,
-      to: customerEmail,
+      to: customerEmail,  // customerEmail es un string ahora
       subject: `Factura ${invoiceId} - Pago Confirmado`,
       text: `Hola, adjuntamos la factura #${invoiceId}. Gracias por su pago.`,
       attachments: [
