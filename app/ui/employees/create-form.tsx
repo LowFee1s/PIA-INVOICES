@@ -17,6 +17,8 @@ import { Button } from '@/app/ui/button';
 import { createEmployee } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
 import { themeType } from '@/app/lib/theme';
+import { useState } from 'react';
+import Image from 'next/image';
 
 export default function Form({ 
   userEmail,
@@ -28,10 +30,51 @@ export default function Form({
 
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useFormState(createEmployee, initialState);
+  const [fotoBase64, setFotoBase64] = useState<string | null>(null);
 
+  const uploadImage = (file) => {
+    console.log('Archivo:', file);  // Verifica si el archivo está bien
+  
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'piaimage');
+    formData.append('folder', 'perfil');
+    formData.append('resource_type', 'image');
+    
+    const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/drn7ynbiq/upload';
+    
+    fetch(cloudinaryUrl, {
+      method: 'POST',
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.secure_url) {
+          console.log('Imagen subida con éxito:', data.secure_url);
+          // Usa esta URL para guardarla en tu base de datos o mostrar la imagen
+          setFotoBase64(data.secure_url);
+        } else {
+          console.log('Error al subir la imagen:', data);
+        }
+      })
+      .catch((error) => {
+        console.error('Error al subir la imagen:', error);
+      });
+  };
+  
+  
+  // Manejador para el cambio de archivo en un input
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      uploadImage(file); // Subir la imagen
+    }
+  };
+  
   return (
     <form action={dispatch}>
       <input type="hidden" name="userEmail" value={userEmail} />
+      <input type="hidden" name="photo" value={fotoBase64 || ""} />
 
       <div className={`rounded-md ${theme.container} p-4 md:p-6`}>
         <div className="mb-4">
@@ -267,6 +310,43 @@ export default function Form({
             </div>
           </div>
         </div>
+
+        <div className="mb-4">
+          <label htmlFor="foto" className={`mb-2 block text-sm font-medium ${theme.text}`}>
+            Foto:
+          </label>
+          <div className="relative">
+            <input
+              id="foto"
+              name="foto"
+              type="file"
+              accept="image/*"
+              className={`peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500 ${theme.border} ${theme.bg} ${theme.text}`}
+              aria-describedby="foto-error"
+              onChange={handleFileChange}
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+              {fotoBase64 ? (
+                <img
+                 src={fotoBase64}
+                 alt="Vista previa"
+                 className="w-40 h-40 rounded-full object-cover"
+                />
+              ) : (
+                <UserCircleIcon className="h-6 w-6 text-gray-500" />
+              )}
+            </div>
+          </div>
+          <div id="foto-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.photo &&
+              state.errors.photo.map((error: string) => (
+                <p className="mt-2 text-sm text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
+          </div>
+        </div>
+
         
         {/* Invoice Status */}
         <fieldset>

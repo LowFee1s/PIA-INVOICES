@@ -488,6 +488,7 @@ export async function fetchFilteredEmployees(query: string, currentPage: number,
         employees.telefono,  
         employees.tipo_empleado,
         employees.fecha_creado,
+        employees.image_url,
         COUNT(invoices.id) AS total_invoices,  -- Cuenta el total de facturas asociadas
         SUM(CASE WHEN invoices.status = 'Pendiente' THEN invoices.amount ELSE 0 END) AS total_pending,
         SUM(CASE WHEN invoices.status = 'Pagado' THEN invoices.amount ELSE 0 END) AS total_paid
@@ -504,6 +505,7 @@ export async function fetchFilteredEmployees(query: string, currentPage: number,
         employees.direccion,
         employees.telefono,
         employees.tipo_empleado,
+        employees.image_url,
         employees.fecha_creado  -- Asegúrate de incluir todas las columnas de employees en el GROUP BY
       ORDER BY employees.fecha_creado DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
@@ -523,6 +525,36 @@ export async function fetchFilteredEmployees(query: string, currentPage: number,
   }
 }
 
+export async function fetchEmployeesAll() {
+  noStore();
+
+  try {
+    const data = await sql<EmployeeField>`
+      SELECT
+        id,
+        tipo_empleado,
+        name
+      FROM employees
+      ORDER BY fecha_creado ASC
+    `;
+
+    const employees = data.rows;
+    return employees;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch all employees.');
+  }
+}
+
+export async function fetchEmployeeSchedules(employeeId, userEmail) {
+  const schedules = await sql.sql`
+    SELECT * 
+    FROM work_schedules
+    WHERE employee_id = ${employeeId}
+    ORDER BY date DESC
+  `;
+  return schedules.rows;
+}
 
 export async function fetchEmployeesPages(query: string, userEmail: string) {
   noStore();

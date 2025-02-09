@@ -7,6 +7,7 @@ import {
   UserIcon,
   Cog6ToothIcon,
   BriefcaseIcon,
+  TableCellsIcon,
   
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -24,6 +25,7 @@ const links = [
     icon: DocumentDuplicateIcon,
   },
   { name: 'Employees', href: '/dashboard/employees', icon: BriefcaseIcon },
+  { name: 'Schedules', href: '/dashboard/schedules', icon: TableCellsIcon },
   { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
   { name: 'My Account', href: '/dashboard/user-profile', icon: UserIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon }
@@ -34,6 +36,7 @@ export default function NavLinks({theme}: {theme: themeType}) {
 
   return (
     <>
+    <div className='flex flex-wrap gap-4 md:flex-col'>
       {links.map((link) => {
         const LinkIcon = link.icon;
         return (
@@ -41,7 +44,7 @@ export default function NavLinks({theme}: {theme: themeType}) {
             key={link.name}
             href={link.href}
             className={
-              `flex h-[48px] grow items-center justify-center gap-2 rounded-md 
+              `flex h-[48px]  items-center justify-center gap-2 rounded-md 
                 p-3 text-sm font-medium hover:text-blue-600 
                 md:flex-none md:justify-start md:p-2 md:px-3
                 ${pathname !== link.href && `${theme.container} ${theme.title} ${theme.hoverBg}`}
@@ -54,6 +57,7 @@ export default function NavLinks({theme}: {theme: themeType}) {
           </Link>
         );
       })}
+      </div>
     </>
   );
 }

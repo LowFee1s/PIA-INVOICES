@@ -63,6 +63,7 @@ export type Employee = {
   isoauth: boolean;
   theme: 'system' | 'dark' | 'light';
   tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
+  image_url: string;
 };
 
 export type EmployeeEdit = {
@@ -178,6 +179,7 @@ export type FormattedCustomersTable = {
 export type CustomerField = {
   id: string;
   name: string;
+  email: string;
 };
 
 export type Product = {
@@ -200,6 +202,7 @@ export type EmployeesTableType = {
   telefono: string;
   theme: 'system' | 'dark' | 'light';
   tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
+  image_url: string;
 };
 
 export type FormattedEmployeesTable = {
@@ -217,6 +220,7 @@ export type EmployeeField = {
 export type InvoiceForm = {
   id: string;
   customer_id: string;
+  customer_email: string;
   employee_id: string;
   modo_pago: 'Tarjeta de Credito/Debito' | 'Efectivo';
   usocliente_cdfi: string;
@@ -246,6 +250,7 @@ export type EmployeeForm = {
   direccion: string;
   telefono: string;
   tipo_empleado: "Supervisor" | "Jefe de area" | "Asistente de Inventario" | "Gerente de la planta principal" | "Auxiliar";
+  image_url: string;
 };
 
 

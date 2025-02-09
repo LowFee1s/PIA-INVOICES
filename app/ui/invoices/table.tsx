@@ -14,6 +14,11 @@ const InvoicePDFGenerator = dynamic(() => import('./invoicePDFGenerator'), {
   ssr: false,  // This ensures it's only rendered on the client side
 });
 
+const InvoicePDFEmail = dynamic(() => import('./invoicePDFEmail'), {
+  ssr: false,  // This ensures it's only rendered on the client side
+});
+
+
 export default function InvoicesTable({
   invoices,
   theme  
@@ -62,6 +67,7 @@ export default function InvoicesTable({
                       theme={theme}
                     /> */}
                     <InvoicePDFGenerator disabled={invoice.status == "Pendiente" ? true : false} invoice={invoice} theme={theme} />
+                    <InvoicePDFEmail disabled={invoice.status == "Pendiente" ? true : false} invoice={invoice} theme={theme} />
                     <UpdateInvoice disabled={invoice.status == "Pagado" ? true : false} id={invoice.id} theme={theme} />
                     <DeleteInvoice disabled={invoice.status == "Pagado" ? true : false} id={invoice.id} theme={theme} />
                   </div>
@@ -132,6 +138,7 @@ export default function InvoicesTable({
                         theme={theme}
                       /> */}
                       <InvoicePDFGenerator disabled={invoice.status == "Pendiente" ? true : false} invoice={invoice} theme={theme} />
+                      <InvoicePDFEmail disabled={invoice.status == "Pendiente" ? true : false} invoice={invoice} theme={theme} />
                       <UpdateInvoice disabled={invoice.status == "Pagado" ? true : false} id={invoice.id} theme={theme} />
                       <DeleteInvoice disabled={invoice.status == "Pagado" ? true : false} id={invoice.id} theme={theme} />
                     </div>

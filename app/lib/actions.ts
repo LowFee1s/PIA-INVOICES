@@ -82,7 +82,8 @@ const EmployeeSchema = z.object({
   direccion: direccionSchema,
   tipo_empleado: tipoempleadoSchema,
   password: passwordSchema,
-  userEmail: emailSchema
+  userEmail: emailSchema,
+  photo: z.string().optional(),
 })
 
 const UpdateEmployee = EmployeeSchema.omit({ password: true, rfc: true });
@@ -549,6 +550,41 @@ export async function deleteInvoice(id: string) {
   }
 }
 
+export async function checkInEmployee(client, employee_id) {
+  const date = new Date();
+
+  try {
+    const result = await client.sql`
+      INSERT INTO work_schedules (employee_id, check_in, status)
+      VALUES (${employee_id}, ${date}, 'En turno')
+      ON CONFLICT (employee_id, date) DO UPDATE SET check_in = EXCLUDED.check_in, status = 'En turno';
+    `;
+    console.log(`Entrada registrada para el empleado ${employee_id}`);
+    return result;
+  } catch (error) {
+    console.error('Error al registrar entrada:', error);
+    throw error;
+  }
+}
+
+export async function checkOutEmployee(client, employee_id) {
+  const date = new Date();
+
+  try {
+    const result = await client.sql`
+      UPDATE work_schedules
+      SET check_out = ${date}, status = 'Finalizado'
+      WHERE employee_id = ${employee_id} AND date = CURRENT_DATE AND check_in IS NOT NULL;
+    `;
+    console.log(`Salida registrada para el empleado ${employee_id}`);
+    return result;
+  } catch (error) {
+    console.error('Error al registrar salida:', error);
+    throw error;
+  }
+}
+
+
 
 
 export async function createEmployee(prevState: EmployeeState, formData: FormData) {
@@ -561,7 +597,7 @@ export async function createEmployee(prevState: EmployeeState, formData: FormDat
     direccion: formData.get('direccion'),
     password: formData.get('password'),
     tipo_empleado: formData.get('tipo_empleado'),
-    userEmail: formData.get('userEmail')
+    photo: formData.get('photo'),
   });
  
   // If form validation fails, return errors early. Otherwise, continue.
@@ -573,7 +609,7 @@ export async function createEmployee(prevState: EmployeeState, formData: FormDat
   }
  
   // Prepare data for insertion into the database
-  const { name, email, rfc, telefono, direccion, tipo_empleado, password, userEmail } = validatedFields.data;
+  const { name, email, rfc, telefono, direccion, tipo_empleado, password, photo } = validatedFields.data;
 
   const confirmPassword = formData.get('confirm-password');
   if (password != confirmPassword) {
@@ -606,8 +642,8 @@ export async function createEmployee(prevState: EmployeeState, formData: FormDat
   // Insert data into the database
   try {
     await sql`
-      INSERT INTO employees (name, email, rfc, direccion, telefono, tipo_empleado, password, isoauth, theme, fecha_creado)
-      VALUES (${name}, ${email}, ${rfc}, ${direccion}, ${telefono}, ${tipo_empleado}, ${hashedPassword}, ${false}, ${'light'}, ${formattedDate})
+      INSERT INTO employees (name, email, rfc, direccion, telefono, tipo_empleado, password, isoauth, theme, fecha_creado, image_url)
+      VALUES (${name}, ${email}, ${rfc}, ${direccion}, ${telefono}, ${tipo_empleado}, ${hashedPassword}, ${false}, ${'light'}, ${formattedDate}, ${photo})
     `;
   } catch (error) {
     // If a database error occurs, return a more specific error.

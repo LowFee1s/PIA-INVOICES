@@ -46,6 +46,12 @@ export function EmployeeDetailsModal({
         <p>
           <strong>Fecha de ingreso:</strong> {employee.fecha_creado.toLocaleString()}
         </p>
+
+        <img
+          src={employee.image_url}
+          alt="Vista previa"
+          className="w-40 h-40 rounded-full object-cover"
+        />
         <div className="mt-4">
           <button
             onClick={onClose}

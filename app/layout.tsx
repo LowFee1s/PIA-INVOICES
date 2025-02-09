@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className={`${inter.className} antialiased ${systemDefault.bg}`}>{children}</body>
     </html>
   );
