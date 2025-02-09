@@ -16,6 +16,9 @@ export async function GET(req: Request) {
 
     // Verificar que el token coincida con la clave secreta esperada
     try {
+      if (!keyemail) {
+        return NextResponse.json({ error: 'Acceso denegado. Clave secreta no definida.' }, { status: 500 });
+      }
       jwt.verify(token, keyemail);
     } catch (error) {
         return NextResponse.json({ error: 'Acceso denegado. Token no válido.' }, { status: 403 });

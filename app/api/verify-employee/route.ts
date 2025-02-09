@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
 
     const now = new Date();
-    const options = { 
+    const options: Intl.DateTimeFormatOptions = { 
       timeZone: 'America/Mexico_City', // Ajusta aquí la zona horaria que prefieras
       hour12: false, // Para formato de 24 horas
       year: 'numeric', 
