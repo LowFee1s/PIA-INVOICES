@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import * as faceapi from 'face-api.js';
-import '@tensorflow/tfjs-node';
 import { Canvas, Image } from 'canvas';
 import axios from 'axios';
 const path = require('path');
