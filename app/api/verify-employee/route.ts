@@ -55,8 +55,8 @@ export async function POST(req: NextRequest) {
     const nowLocal = now.toLocaleString('en-US', options).replace(',', ''); // Obtener fecha en el formato adecuado
     console.log("✅ Hora local:", nowLocal);
 
-    const response = await axios.get(imageBase64, { responseType: 'arraybuffer' });
-    const imgBuffer = Buffer.from(response.data, 'binary');
+    const responseUrl = await axios.get(imageBase64, { responseType: 'arraybuffer' });
+    const imgBuffer = Buffer.from(responseUrl.data, 'binary');
     console.log("✅ Imagen convertida en buffer.");
 
     const image = await canvas.loadImage(imgBuffer);
