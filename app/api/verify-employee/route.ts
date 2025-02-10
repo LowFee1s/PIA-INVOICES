@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import * as faceapi from 'face-api.js';
 import { Canvas, Image } from 'canvas';
+import cloudinary from 'cloudinary'; // Asegúrate de instalar cloudinary
 import axios from 'axios'; // Asegúrate de instalar axios
 const path = require('path');
 const canvas = require('canvas');
+
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  api_key: process.env.CLOUDINARY_API_KEY,
+});
 
 // Ruta de modelos
 const modelPath = path.join(process.cwd(), 'models');
@@ -48,7 +55,8 @@ export async function POST(req: NextRequest) {
     const nowLocal = now.toLocaleString('en-US', options).replace(',', ''); // Obtener fecha en el formato adecuado
     console.log("✅ Hora local:", nowLocal);
 
-    const imgBuffer = Buffer.from(imageBase64, 'base64');
+    const response = await axios.get(imageBase64, { responseType: 'arraybuffer' });
+    const imgBuffer = Buffer.from(response.data, 'binary');
     console.log("✅ Imagen convertida en buffer.");
 
     const image = await canvas.loadImage(imgBuffer);
