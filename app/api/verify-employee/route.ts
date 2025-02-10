@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import * as faceapi from 'face-api.js';
+import '@tensorflow/tfjs-node';
 import { Canvas, Image } from 'canvas';
 import axios from 'axios';
 const path = require('path');
@@ -33,8 +34,15 @@ export async function POST(req: NextRequest) {
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     }).replace(',', '');
 
+    console.log('🔄 Cargando imagen en buffer...');
     const imgBuffer = Buffer.from((await axios.get(imageBase64, { responseType: 'arraybuffer' })).data, 'binary');
+
+    console.log('📸 Buffer de imagen cargado:', imgBuffer.length, 'bytes');
+
+    console.log('🎨 Cargando imagen en canvas...');
     const image = await canvas.loadImage(imgBuffer);
+
+    console.log('✅ Imagen cargada correctamente.');
     const detections = await faceapi.detectAllFaces(image).withFaceLandmarks().withFaceDescriptors();
     if (!detections.length) return NextResponse.json({ message: '❌ No se detectó una cara válida' }, { status: 400 });
     const inputFaceDescriptor = detections[0].descriptor;
