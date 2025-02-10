@@ -3,13 +3,15 @@ import { sql } from '@vercel/postgres';
 import * as faceapi from 'face-api.js';
 import { Canvas, Image } from 'canvas';
 import axios from 'axios';
-const path = require('path');
+import path from 'path';
 const canvas = require('canvas');
 
 const modelPath = path.join(process.cwd(), 'models');
 faceapi.env.monkeyPatch({ Image: canvas.Image, Canvas: canvas.Canvas });
 
 let modelsLoaded = false;
+let faceDescriptors: any[] = [];
+
 async function loadModels() {
   if (!modelsLoaded) {
     await Promise.all([
@@ -19,6 +21,14 @@ async function loadModels() {
     ]);
     modelsLoaded = true;
     console.log('✅ Modelos cargados correctamente');
+
+    // Cargar descriptores de rostros de empleados desde la base de datos
+    const employees = (await sql`SELECT id, image_url, face_descriptor FROM employees WHERE image_url IS NOT NULL AND face_descriptor IS NOT NULL`).rows;
+    faceDescriptors = employees.map((employee) => ({
+      id: employee.id,
+      descriptor: new Float32Array(JSON.parse(employee.face_descriptor))
+    }));
+    console.log('✅ Descriptores de empleados cargados');
   }
 }
 
@@ -35,37 +45,27 @@ export async function POST(req: NextRequest) {
 
     console.log('🔄 Cargando imagen en buffer...');
     const imgBuffer = Buffer.from((await axios.get(imageBase64, { responseType: 'arraybuffer' })).data, 'binary');
-
     console.log('📸 Buffer de imagen cargado:', imgBuffer.length, 'bytes');
 
     console.log('🎨 Cargando imagen en canvas...');
     const image = await canvas.loadImage(imgBuffer);
-
     console.log('✅ Imagen cargada correctamente.');
+
     const detections = await faceapi.detectAllFaces(image).withFaceLandmarks().withFaceDescriptors();
     if (!detections.length) return NextResponse.json({ message: '❌ No se detectó una cara válida' }, { status: 400 });
+
     const inputFaceDescriptor = detections[0].descriptor;
+    let employeeId: number | null = null;
 
-    const employees = (await sql`SELECT id, image_url FROM employees WHERE image_url IS NOT NULL`).rows;
-    if (employees.length === 0) return NextResponse.json({ message: '⚠️ No se encontraron empleados' }, { status: 404 });
-
-    const employeeMatches = (await Promise.all(employees.map(async (employee) => {
-      try {
-        const dbImageBuffer = Buffer.from((await axios.get(employee.image_url, { responseType: 'arraybuffer' })).data, 'binary');
-        const dbImage = await canvas.loadImage(dbImageBuffer);
-        const dbDetections = await faceapi.detectAllFaces(dbImage).withFaceLandmarks().withFaceDescriptors();
-        if (!dbDetections.length) return null;
-
-        const distance = faceapi.euclideanDistance(inputFaceDescriptor, dbDetections[0].descriptor);
-        return distance < 0.6 ? employee.id : null;
-      } catch {
-        return null;
-      }
-    }))).filter(Boolean);
+    // Comparar con los descriptores pre-cargados
+    const employeeMatches = faceDescriptors.filter((employee) => {
+      const distance = faceapi.euclideanDistance(inputFaceDescriptor, employee.descriptor);
+      return distance < 0.6; // Considera 0.6 como el umbral de coincidencia
+    });
 
     if (employeeMatches.length === 0) return NextResponse.json({ message: '❌ No se encontró coincidencia' }, { status: 400 });
+    employeeId = employeeMatches[0].id;
 
-    const employeeId = employeeMatches[0];
     if (action === 'entry') {
       const existingEntry = await sql`SELECT * FROM work_schedules WHERE employee_id = ${employeeId} AND check_out IS NULL;`;
       if (existingEntry.rows.length) return NextResponse.json({ message: '⚠️ Entrada ya registrada' }, { status: 400 });
