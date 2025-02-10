@@ -1,5 +1,6 @@
 "use client"
 import jsPDFInvoiceTemplate, { OutputType } from "jspdf-invoice-template";
+import jsPDF from "jspdf";
 import { formatDateToLocal, formatCurrency, formatDatetoPayToLocal } from '@/app/lib/utils';
 import { Invoice } from '@/app/lib/definitions';
 import { useState } from "react";
@@ -138,7 +139,7 @@ export default function InvoicePDFGenerator({ invoice, disabled, theme }: { invo
 
     try {
       // Agrupar productos con el mismo título y sumar las cantidades y subtotales
-      const groupedProducts = invoice.products.reduce((acc, product) => {
+      const groupedProducts = invoice.products.reduce((acc: { title: string; quantity: number; total: number; price: number; description?: string }[], product) => {
         const existingProduct = acc.find(item => item.title === product.title);
         if (existingProduct) {
           existingProduct.quantity += product.quantity;
@@ -158,10 +159,13 @@ export default function InvoicePDFGenerator({ invoice, disabled, theme }: { invo
         formatCurrency(product.total),
       ]);
 
+      const doc = new jsPDF();
+
       const props = {
         outputType: OutputType.Save,
         fileName: `invoice_${invoice.id}.pdf`,
         returnJsPDFDocObject: true,
+        jsPDFDoc: doc,
         logo: {
           src: "/Logo.png",
           type: 'PNG',
@@ -216,9 +220,8 @@ export default function InvoicePDFGenerator({ invoice, disabled, theme }: { invo
         pageLabel: "Pagina ",
       };
 
-      const pdf = jsPDFInvoiceTemplate(props);
-      const doc = pdf.jsPDFDocObject;
-
+      jsPDFInvoiceTemplate(props);
+      
       // Posicionar textos adicionales
       const yPosition = 170;
       doc.setFontSize(12).text(`Uso de la factura: ${invoice.usocliente_cdfi || 'N/A'}`, 10, yPosition);

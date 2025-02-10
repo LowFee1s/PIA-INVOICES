@@ -23,7 +23,7 @@ export default function Pagination({
   const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
 
   const createPageURL = (pageNumber: number | string) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString());
     params.set('page', pageNumber.toString());
     return `${pathname}?${params.toString()}`;
   };

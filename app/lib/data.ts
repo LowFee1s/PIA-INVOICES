@@ -261,6 +261,8 @@ export async function fetchFilteredInvoices(
           product_id: product.product_id,
           quantity: product.quantity,
           title: product.name,
+          unit: 'Unit',
+          name: product.name,
           description: product.description,
           price: product.price,
         })),

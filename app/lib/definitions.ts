@@ -125,7 +125,7 @@ export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
 
 export type InvoicesTable = {
   id: string;
-  id_tmp: string;
+  id_tmp: number;
   customer_id: string;
   employee_id: string;
   name: string;

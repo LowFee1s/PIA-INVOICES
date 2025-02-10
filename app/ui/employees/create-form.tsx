@@ -32,7 +32,7 @@ export default function Form({
   const [state, dispatch] = useFormState(createEmployee, initialState);
   const [fotoBase64, setFotoBase64] = useState<string | null>(null);
 
-  const uploadImage = (file) => {
+  const uploadImage = (file: any) => {
     console.log('Archivo:', file);  // Verifica si el archivo está bien
   
     const formData = new FormData();
@@ -64,7 +64,7 @@ export default function Form({
   
   
   // Manejador para el cambio de archivo en un input
-  const handleFileChange = (event) => {
+  const handleFileChange = (event: any) => {
     const file = event.target.files[0];
     if (file) {
       uploadImage(file); // Subir la imagen

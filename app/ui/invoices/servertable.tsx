@@ -19,3 +19,4 @@ export default async function InvoicesServerTable({
 
   return <InvoicesTable invoices={invoices} theme={theme} />;
 }
+ 
