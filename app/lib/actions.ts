@@ -10,10 +10,19 @@ import jwt from 'jsonwebtoken';
 import * as faceapi from 'face-api.js';
 const canvas = require('canvas');
 import axios from 'axios';
-
+import path from 'path';
 import nodemailer from 'nodemailer';
 import type { User } from '@/app/lib/definitions';
 import { unstable_noStore } from 'next/cache';
+
+const modelPath = path.join(process.cwd(), 'models');
+faceapi.env.monkeyPatch({ Image: canvas.Image, Canvas: canvas.Canvas });
+
+async function loadModels() {
+  await faceapi.nets.ssdMobilenetv1.loadFromDisk(modelPath);
+  await faceapi.nets.faceLandmark68Net.loadFromDisk(modelPath);
+  await faceapi.nets.faceRecognitionNet.loadFromDisk(modelPath);
+}
 
 // A regular expression to check for valid email format
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -674,9 +683,9 @@ export async function checkOutEmployee(client: any, employee_id: string) {
 }
 
 export async function saveEmployeeDescriptor(employeeId: any, imageUrl: any) {
+  await loadModels();
   const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-  const imgBuffer = Buffer.from(response.data, 'binary');
-  const image = await canvas.loadImage(imgBuffer);
+  const image = await canvas.loadImage(Buffer.from(response.data, 'binary'));
 
   const detections = await faceapi
     .detectSingleFace(image)
@@ -707,6 +716,7 @@ export async function createEmployee(prevState: EmployeeState, formData: FormDat
     telefono: formData.get('telefono'),
     direccion: formData.get('direccion'),
     password: formData.get('password'),
+    userEmail: formData.get('userEmail'),
     tipo_empleado: formData.get('tipo_empleado'),
     photo: formData.get('photo'),
   });
