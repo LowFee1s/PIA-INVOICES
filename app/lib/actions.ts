@@ -7,6 +7,10 @@ import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import * as faceapi from 'face-api.js';
+const canvas = require('canvas');
+import axios from 'axios';
+
 import nodemailer from 'nodemailer';
 import type { User } from '@/app/lib/definitions';
 import { unstable_noStore } from 'next/cache';
@@ -669,6 +673,28 @@ export async function checkOutEmployee(client: any, employee_id: string) {
   }
 }
 
+export async function saveEmployeeDescriptor(employeeId: any, imageUrl: any) {
+  const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+  const imgBuffer = Buffer.from(response.data, 'binary');
+  const image = await canvas.loadImage(imgBuffer);
+
+  const detections = await faceapi
+    .detectSingleFace(image)
+    .withFaceLandmarks()
+    .withFaceDescriptor();
+
+  if (!detections || !detections.descriptor) {
+    throw new Error('❌ No se pudo extraer el descriptor facial.');
+  }
+
+  // Guardar el descriptor en la base de datos como un array de floats
+  await sql`
+    UPDATE employees 
+    SET face_descriptor = ${JSON.stringify(detections.descriptor)}
+    WHERE id = ${employeeId};
+  `;
+  console.log(`✅ Descriptor facial guardado para el empleado ${employeeId}`);
+}
 
 
 
@@ -726,10 +752,18 @@ export async function createEmployee(prevState: EmployeeState, formData: FormDat
 
   // Insert data into the database
   try {
-    await sql`
+    const result = await sql`
       INSERT INTO employees (name, email, rfc, direccion, telefono, tipo_empleado, password, isoauth, theme, fecha_creado, image_url)
       VALUES (${name}, ${email}, ${rfc}, ${direccion}, ${telefono}, ${tipo_empleado}, ${hashedPassword}, ${false}, ${'light'}, ${formattedDate}, ${photo})
+      RETURNING id
     `;
+
+    const employeeId = result.rows[0].id;
+
+    if (employeeId && photo) {
+      await saveEmployeeDescriptor(employeeId, photo);
+    }
+
   } catch (error) {
     // If a database error occurs, return a more specific error.
     return {
