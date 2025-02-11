@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
     
     let matchedEmployee = null;
     for (const employee of employees.rows) {
-      const dbDescriptor = JSON.parse(employee.face_descriptor);
-      const distance = faceapi.euclideanDistance(inputFaceDescriptor, dbDescriptor);
+      const dbDescriptor = Object.values(employee.face_descriptor);
+      const distance = faceapi.euclideanDistance(inputFaceDescriptor, dbDescriptor as number[]);
       if (distance < 0.6) {
         matchedEmployee = employee;
         break;
@@ -79,6 +79,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: '⚠️ Acción no reconocida' }, { status: 400 });
   } catch (error) {
+    console.log(error);
+    
     return NextResponse.json({ message: '❌ Error al registrar la entrada/salida', error }, { status: 500 });
   }
 }
