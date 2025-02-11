@@ -15,7 +15,7 @@ async function loadModels() {
   await faceapi.nets.faceRecognitionNet.loadFromDisk(modelPath);
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<Response> {
   try {
     await loadModels();
     const { imageBase64, action } = await req.json();
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const inputDescriptor = detections.descriptor;
     const employees = await sql`SELECT id, face_descriptor FROM employees WHERE face_descriptor IS NOT NULL`;
     
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const worker = new Worker('./app/lib/compareDescriptorsWorker.js', {
         workerData: { inputDescriptor, employees: employees.rows }
       });
