@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
     
     let matchedEmployee = null;
     for (const employee of employees.rows) {
-      const dbDescriptor = Object.values(employee.face_descriptor);
-      const distance = faceapi.euclideanDistance(inputFaceDescriptor, dbDescriptor as number[]);
+      const dbDescriptor = employee.face_descriptor;
+      const distance = faceapi.euclideanDistance(inputFaceDescriptor, dbDescriptor);
       if (distance < 0.6) {
         matchedEmployee = employee;
         break;
