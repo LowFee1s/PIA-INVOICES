@@ -1,5 +1,5 @@
 // compareDescriptorsWorker.js
-const faceapi = require('../lib/face-api/face-api.js');
+const faceapi = require('../lib/face-api');
 const { parentPort } = require('worker_threads');
 const axios = require('axios');
 const path = require('path');
